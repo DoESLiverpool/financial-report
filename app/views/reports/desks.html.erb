@@ -1,0 +1,9 @@
+<table>
+  <% @ordered_months.each do |month| %>
+  <% count = @counts[month] %>
+  <tr>
+    <th><%=month%></th>
+    <td><%=count%> (<%=@paid_counts[month]%>) [<%=@month_lasts[month]%>]</td>
+    <td><span style="display: inline-block; background: red; position: relative; height:10px; width: <%=count * 30%>px"></span></td>
+  <% end %>
+</table>
