@@ -1,12 +1,19 @@
 class ReportsController < ApplicationController
-  def desks
+  def categories
+    product_category = ProductCategory.where(name: params[:product_category]).first
+
+    @product_categories = ProductCategory.all
+
+    if product_category.nil?
+      return
+    end
     # Hash of YYYYMM -> count of items for that month
     @counts = {}
     # Hash of YYYYMM -> count of items for that month that have been paid for
     @paid_counts = {}
     min_date = nil
     # Permanent Desk,Hot Desk,Monthly Hot Desk with storage,John McKerrell Hot desk with storage,Darryl Bayliss Hot Desk,Permanent Desk (For Student),Permanent Desk - August and September,Steven Hassall Hot Desk
-    descriptions = params[:descriptions].split(/,/)
+    descriptions = product_category.product_category_descriptions.map {|pcd| pcd.description}
     InvoiceItem.where(description: descriptions).each do |item|
       if item.invoice.status != "Sent"
         next

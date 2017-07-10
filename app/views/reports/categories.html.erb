@@ -1,3 +1,14 @@
+<%= form_tag("", method: "get") do %>
+<%= select_tag(:product_category, options_for_select(@product_categories.map { |pc| [ pc.name ] }, params[:product_category])) %>
+<%= label_tag :skiplast, "Skip last N months:" %>
+<%= text_field_tag :skiplast, params[:skiplast], size:4 %>
+<%= label_tag :showlast, "Show only last N months:" %>
+<%= text_field_tag :showlast, params[:showlast], size:4 %>
+<%= submit_tag "Show" %>
+<% end %>
+
+<% if @ordered_months %>
+
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
   google.charts.load('current', {'packages':['corechart']});
@@ -29,6 +40,7 @@
 </script>
 <div id="chart" style="width: 900px; height: 500px"></div>
 <a id="chart_link" style="visibility: hidden;" href="">Download Chart</a>
+<h3><%=params[:descriptions]%></h3>
 <table>
   <% @ordered_months.each do |month| %>
   <% count = @counts[month] %>
@@ -38,3 +50,5 @@
     <td><span style="display: inline-block; background: red; position: relative; height:10px; width: <%=count * 30%>px"></span></td>
   <% end %>
 </table>
+
+<% end # if ordered_months %>

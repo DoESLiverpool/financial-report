@@ -1,3 +1,4 @@
+require 'csv'
 namespace :import do
 
 #  class ExcelBankAccountEntry < Importex::Base
@@ -84,4 +85,46 @@ namespace :import do
     end
   end
 
+  desc "Import product categories from a CSV into the database"
+  task :product_categories => :environment do |t, args|
+    filename = File.expand_path(ARGV[1])
+    skipped_first = false
+    last_category = nil
+    progress = ProgressBar.create(total: nil)
+
+    CSV.parse(File.read(filename)).each do |row|
+      if !skipped_first
+        skipped_first = true
+        next
+      end
+      progress.increment
+
+      # If the first column is empty then use the previous category
+      category = nil
+      if row[0].nil? || row[0].length == 0
+        category = last_category
+      else
+        category = ProductCategory.where(name: row[0]).first
+        if category.nil?
+          category = ProductCategory.new
+          category.name = row[0]
+          category.save!
+        end
+        last_category = category
+      end
+
+      # If the first column of the first row is empty then we can't import
+      # this row
+      if category
+        # Check for an existing record, allows importing the same CSV repeatedly
+        description = ProductCategoryDescription.where(description: row[1]).first
+        if description.nil?
+          description = ProductCategoryDescription.new
+          description.product_category = category
+          description.description = row[1]
+          description.save!
+        end
+      end
+    end
+  end
 end
