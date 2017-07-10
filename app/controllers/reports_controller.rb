@@ -53,5 +53,37 @@ class ReportsController < ApplicationController
         break
       end
     end
+
+    begin
+      skiplast = Integer(params[:skiplast])
+    rescue Exception
+      skiplast = 0
+    end
+    begin
+      showlast = Integer(params[:showlast])
+    rescue Exception
+      showlast = 0
+    end
+
+    @ordered_months = @ordered_months.take(@ordered_months.length-skiplast)
+    if showlast > 0 and showlast < @ordered_months.length
+      @ordered_months = @ordered_months.drop(@ordered_months.length-showlast)
+    end
+
+    respond_to do |format|
+      format.html
+      format.xls {
+        book = Spreadsheet::Workbook.new
+        sheet = book.create_worksheet name: "Items"
+        sheet.update_row 0, "Month", "Count", "Paid Count"
+        @ordered_months.each_index do |i|
+          yearmonth = @ordered_months[i]
+          sheet.update_row i+1, yearmonth, @counts[yearmonth], @paid_counts[yearmonth]
+        end
+        file_contents = StringIO.new
+        book.write file_contents
+        render body: file_contents.string
+      }
+    end
   end
 end
