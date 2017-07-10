@@ -15,10 +15,21 @@ application up and running.
 1. `bin/rails server`
 1. `rake import:freeagent ~/Downloads/company-export-2017-06-30-10-14.xls`
 1. `rake process:invoices`
+1. `rake import:product_categories categories.csv`
 
-Then visit [http://localhost:3010/reports/desks?descriptions=Permanent%20Desk,Hot%20Desk,Monthly%20Hot%20Desk%20with%20storage&skiplast=1&showlast=12](http://localhost:3010/reports/desks?descriptions=Permanent%20Desk,Hot%20Desk,Monthly%20Hot%20Desk%20with%20storage&skiplast=1&showlast=12)
+Then visit [http://localhost:3010/reports/categories](http://localhost:3010/reports/categories)
 
 
+Your categories CSV should have a header row followed by product category name and description pairs, if the name is left blank then the previous value is used, e.g.:
+
+```
+Name,Description
+Hot Desk Day,1 Hot Desk Day
+,2 Hot Desk Days
+,3 Hot Desk Days
+Permanent Desk,Permanent Desk
+,Permanent Desk for Jo
+```
 
 
 Things you may want to cover:
