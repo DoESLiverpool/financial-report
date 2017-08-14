@@ -1,3 +1,16 @@
 // Place all the styles related to the reports controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+@media print {
+  form { display: none }
+}
+tr:nth-child(even) {
+  background: #EEE;
+}
+
+td.id {
+  color: #DDD;
+}
+td.descriptions, td.date {
+  color: #BBB;
+}

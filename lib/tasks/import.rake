@@ -120,10 +120,10 @@ namespace :import do
         description = ProductCategoryDescription.where(description: row[1]).first
         if description.nil?
           description = ProductCategoryDescription.new
-          description.product_category = category
           description.description = row[1]
-          description.save!
         end
+        description.product_category = category
+        description.save!
       end
     end
   end

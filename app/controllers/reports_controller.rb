@@ -1,10 +1,10 @@
 class ReportsController < ApplicationController
   def categories
-    product_category = ProductCategory.where(name: params[:product_category]).first
+    @product_category = ProductCategory.where(name: params[:product_category]).first
 
     @product_categories = ProductCategory.all
 
-    if product_category.nil?
+    if @product_category.nil?
       return
     end
     # Hash of YYYYMM -> count of items for that month
@@ -13,7 +13,7 @@ class ReportsController < ApplicationController
     @paid_counts = {}
     min_date = nil
     # Permanent Desk,Hot Desk,Monthly Hot Desk with storage,John McKerrell Hot desk with storage,Darryl Bayliss Hot Desk,Permanent Desk (For Student),Permanent Desk - August and September,Steven Hassall Hot Desk
-    descriptions = product_category.product_category_descriptions.map {|pcd| pcd.description}
+    descriptions = @product_category.product_category_descriptions.map {|pcd| pcd.description}
     InvoiceItem.where(description: descriptions).each do |item|
       if item.invoice.status != "Sent"
         next
@@ -92,5 +92,75 @@ class ReportsController < ApplicationController
         render body: file_contents.string
       }
     end
+  end
+
+  def service_users
+    @categories = params[:categories] || []
+    @categories = @categories.map { |c| c = c.to_i }
+
+    begin
+      @start_date = Date.parse(params[:start_date])
+    rescue Exception
+      @start_date = Invoice.minimum(:date)
+    end
+    begin
+      @end_date = Date.parse(params[:end_date])
+    rescue Exception
+      @end_date = Date.today
+    end
+
+    #select contact, date from invoices where date > '2016-08-01' and  id in (select invoice_id from invoice_items where description = 'Registered Business Address and Mailbox');
+
+    @invoices = Invoice.where(["`date` >= ? AND `date` <= ? AND id IN (SELECT invoice_id FROM invoice_items WHERE description IN ( SELECT description FROM product_category_descriptions WHERE product_category_id IN ( #{@categories.join(", ")} ) ) )", @start_date, @end_date]).order(`date DESC`).group(:contact)
+
+  end
+
+  def income_distribution
+    categories_hash = {}
+    exclusions = params[:exclusions] || []
+    ProductCategoryDescription.all.each do |pcd|
+      category = pcd.product_category.name
+      categories_hash[pcd.description] = category
+    end
+
+    begin
+      @start_date = Date.parse(params[:start_date])
+    rescue Exception
+      @start_date = Invoice.minimum(:date)
+    end
+    begin
+      @end_date = Date.parse(params[:end_date])
+    rescue Exception
+      @end_date = Date.today
+    end
+
+    @totals = {}
+    years_hash = {}
+    InvoiceItem.joins(:invoice).where(["`date` >= ? AND `date` < ?", @start_date, @end_date]).each do |item|
+      category_name = categories_hash[item.description]
+      if exclusions.include?(category_name)
+        next
+      end
+      if item.subtotal < 0
+        next
+      end
+      puts "Unknown category: #{item.description} #{item.subtotal}"
+      if category_name.nil?
+        category_name = "Other"
+      end
+      year = String(item.invoice.date.year)
+      years_hash[year] = 1
+      if @totals[category_name].nil?
+        @totals[category_name] = {"Total" => 0}
+      end
+      if @totals[category_name][year].nil?
+        @totals[category_name][year] = 0
+      end
+      puts @totals.inspect
+      @totals[category_name][year] += item.subtotal
+      @totals[category_name]["Total"] += item.subtotal
+    end
+    @categories = @totals.keys
+    @years = years_hash.keys.sort
   end
 end

@@ -16,16 +16,17 @@
 
   function drawChart() {
     var dataArray = [
-      ['Month', 'Count', 'Paid Count'],
+      ['Month', 'Count'],
     <% @ordered_months.each do |month| %>
-      <%= raw [ month, @counts[month], @paid_counts[month] ].to_json %>,
+      <%= raw [ month, @counts[month] ].to_json %>,
     <% end %>
     ];
     var data = google.visualization.arrayToDataTable(dataArray);
 
     var options = {
-      title: <%= raw request.params["title"].to_json %>,
-      legend: { position: 'bottom' }
+      title: <%= raw @product_category.name.to_json %>,
+      legend: { position: 'bottom' },
+      vAxis: { minValue: 0 }
     };
 
     var chart = new google.visualization.LineChart(document.getElementById('chart'));
