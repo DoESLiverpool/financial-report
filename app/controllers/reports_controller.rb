@@ -53,12 +53,10 @@ class ReportsController < ApplicationController
         @month_lasts[yearmonth] = ""
       end
       @last_months[@counts[yearmonth]] = yearmonth
-      min_date = min_date >> 1
       if min_date > Date.today
-        yearmonth = min_date.strftime("%Y%m")
-        @ordered_months << yearmonth
         break
       end
+      min_date = min_date >> 1
     end
 
     begin
