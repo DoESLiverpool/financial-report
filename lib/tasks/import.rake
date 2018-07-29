@@ -18,22 +18,27 @@ namespace :import do
       sheets = ARGV[2].split /,/
     end
     puts "Reading #{sheets.length > 0 ? sheets.join(", ") : "everything"} from #{filename}"
-    book = Spreadsheet.open(filename)
+    book = Roo::Spreadsheet.open(filename)
 
     if sheets.include?("entries")
-      bank_account_entries_sheet = book.worksheet "Bank Account Entries"
+      bank_account_entries_sheet = book.sheet "Bank Account Entries"
       bank_account_count = 0
-      progress = ProgressBar.create(total: bank_account_entries_sheet.rows.length)
+      progress = ProgressBar.create(total: bank_account_entries_sheet.count)
       progress.increment
-      bank_account_entries_sheet.each 1 do |row|
+      skipped_first = false
+      bank_account_entries_sheet.each(account_name: "Bank Account Name", description: "Description", date: "Date", entry_type: "Type", gross_value: "Gross Value", sales_tax_rate: "Sales Tax Rate") do |row|
+        unless skipped_first
+          skipped_first = true
+          next
+        end
         bank_account_count += 1
         entry = BankAccountEntry.new
-        entry.bank_account_name = row[0]
-        entry.description = row[1]
-        entry.date = row[2]
-        entry.entry_type = row[3]
-        entry.gross_value = row[4]
-        entry.sales_tax_rate = row[7]
+        entry.bank_account_name = row[:account_name]
+        entry.description = row[:description]
+        entry.date = row[:date]
+        entry.entry_type = row[:entry_type]
+        entry.gross_value = row[:gross_value]
+        entry.sales_tax_rate = row[:sales_tax_rate]
         entry.save!
         progress.increment
       end
@@ -41,43 +46,75 @@ namespace :import do
     end
 
     if sheets.include?("invoices")
-      invoices_sheet = book.worksheet "Invoices"
+      invoices_sheet = book.sheet "Invoices"
       active_invoice = nil
       invoices_count = 0
       invoice_items_count = 0
-      progress = ProgressBar.create(total: invoices_sheet.rows.length)
+      progress = ProgressBar.create(total: invoices_sheet.count)
       progress.increment
-      invoices_sheet.each 1 do |row|
+      skipped_first = false
+      contact_organisation_header = invoices_sheet.cell(1,1)
+      contact_name_header = contact_organisation_header == "Contact" ? "Contact" : "Contact Name"
+      invoices_sheet.each(
+        contact_organisation: contact_organisation_header,
+        contact_name: contact_name_header,
+        item_type: "Item Type",
+        quantity: "Quantity",
+        price: "Price",
+        description: "Description",
+        sales_tax_rate: "Sales Tax Rate",
+        subtotal: "Subtotal",
+        reference: "Reference",
+        date: "Date",
+        payment_terms_in_days: "Payment Terms In Days",
+        status: "Status",
+        currency: "Currency",
+        comments: "Comments",
+        net_amount: "Net Amount",
+        sales_tax_amount: "Sales Tax Amount",
+        total_value: "Total Value"
+        ) do |row|
+        unless skipped_first
+          skipped_first = true
+          next
+        end
         progress.increment
 
-        if row[0].nil? or row[0].length == 0
+        contact = row[:contact_organisation] || ""
+        contact_name = row[:contact_name] || ""
+        if contact.length > 0 and contact_name.length > 0
+          contact += " - "
+        end
+        contact += contact_name
+
+        if contact.length == 0
           if active_invoice.nil?
+            raise Error.new, "Invoice item without invoice! #{row.inspect}"
             next
           end
           invoice_items_count += 1
           item = InvoiceItem.new
           item.invoice = active_invoice
-          item.item_type = row[11]
-          item.quantity = row[12]
-          item.price = row[13]
-          item.description = row[14]
-          item.sales_tax_rate = row[15]
-          item.subtotal = row[16]
+          item.item_type = row[:item_type]
+          item.quantity = row[:quantity]
+          item.price = row[:price]
+          item.description = row[:description]
+          item.sales_tax_rate = row[:sales_tax_rate]
+          item.subtotal = row[:subtotal]
           item.save!
         else
           invoices_count += 1
           active_invoice = Invoice.new
-          active_invoice.contact = row[0]
-          active_invoice.project = row[1]
-          active_invoice.reference = row[2]
-          active_invoice.date = row[3]
-          active_invoice.payment_terms_in_days = row[4]
-          active_invoice.status = row[5]
-          active_invoice.currency = row[6]
-          active_invoice.comments = row[7]
-          active_invoice.net_amount = row[8]
-          active_invoice.sales_tax_amount = row[9]
-          active_invoice.total_value = row[10]
+          active_invoice.contact = contact
+          active_invoice.reference = row[:reference]
+          active_invoice.date = row[:date]
+          active_invoice.payment_terms_in_days = row[:payment_terms_in_days]
+          active_invoice.status = row[:status]
+          active_invoice.currency = row[:currency]
+          active_invoice.comments = row[:comments]
+          active_invoice.net_amount = row[:net_amount]
+          active_invoice.sales_tax_amount = row[:sales_tax_amount]
+          active_invoice.total_value = row[:total_value]
           active_invoice.save!
         end
       end
