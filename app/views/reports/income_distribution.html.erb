@@ -29,8 +29,8 @@
       <% if params[:stacked_percent] == 'on' %>
       <%= raw [ "Total" ].concat(@categories.map { |category| Float(@totals[category]["Total"])} ) %>,
       <% end %>
-      <% @years.each do |year| %>
-      <%= raw [ year ].concat(@categories.map { |category| Float(@totals[category][year] || 0)}) %>,
+      <% @periods.each do |period| %>
+      <%= raw [ period ].concat(@categories.map { |category| Float(@totals[category][period] || 0)}) %>,
       <% end %>
     ];
     var data = google.visualization.arrayToDataTable(dataArray);

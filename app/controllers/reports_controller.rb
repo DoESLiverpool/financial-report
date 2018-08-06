@@ -133,7 +133,7 @@ class ReportsController < ApplicationController
     end
 
     @totals = {}
-    years_hash = {}
+    periods_hash = {}
     InvoiceItem.joins(:invoice).where(["`date` >= ? AND `date` < ?", @start_date, @end_date]).each do |item|
       category_name = categories_hash[item.description]
       if exclusions.include?(category_name)
@@ -146,19 +146,19 @@ class ReportsController < ApplicationController
       if category_name.nil?
         category_name = "Other"
       end
-      year = String(item.invoice.date.year)
-      years_hash[year] = 1
+      period = AccountingPeriod.which(item.invoice.date).description
+      periods_hash[period] = 1
       if @totals[category_name].nil?
         @totals[category_name] = {"Total" => 0}
       end
-      if @totals[category_name][year].nil?
-        @totals[category_name][year] = 0
+      if @totals[category_name][period].nil?
+        @totals[category_name][period] = 0
       end
       puts @totals.inspect
-      @totals[category_name][year] += item.subtotal
+      @totals[category_name][period] += item.subtotal
       @totals[category_name]["Total"] += item.subtotal
     end
     @categories = @totals.keys
-    @years = years_hash.keys.sort
+    @periods = periods_hash.keys.sort
   end
 end
