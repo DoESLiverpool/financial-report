@@ -1,5 +1,6 @@
 <%= form_tag("", method: "get") do %>
 <%= select_tag(:product_category, options_for_select(@product_categories.map { |pc| [ pc.name ] }, params[:product_category])) %>
+<%= select_tag(:view_type, options_for_select([ ["Total", "total"], ["Number", "number"] ], params[:view_type])) %>
 <%= label_tag :skiplast, "Skip last N months:" %>
 <%= text_field_tag :skiplast, params[:skiplast], size:4 %>
 <%= label_tag :showlast, "Show only last N months:" %>
@@ -42,12 +43,13 @@
 <div id="chart" style="width: 900px; height: 500px"></div>
 <a id="chart_link" style="visibility: hidden;" href="">Download Chart</a>
 <table>
+  <% max = @counts.values.max %>
   <% @ordered_months.each do |month| %>
   <% count = @counts[month] %>
   <tr>
     <th><%=month%></th>
     <td><%=count%> (<%=@paid_counts[month]%>) [<%=@month_lasts[month]%>]</td>
-    <td><span style="display: inline-block; background: red; position: relative; height:10px; width: <%=count * 30%>px"></span></td>
+    <td><span style="display: inline-block; background: red; position: relative; height:10px; width: <%=(count.to_f / max.to_f) * 600%>px"></span></td>
   <% end %>
 </table>
 

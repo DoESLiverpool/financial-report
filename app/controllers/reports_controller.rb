@@ -7,6 +7,9 @@ class ReportsController < ApplicationController
     if @product_category.nil?
       return
     end
+
+    @view_type = params[:view_type] || "total"
+
     # Hash of YYYYMM -> count of items for that month
     @counts = {}
     # Hash of YYYYMM -> count of items for that month that have been paid for
@@ -26,9 +29,11 @@ class ReportsController < ApplicationController
         @counts[yearmonth] = 0
         @paid_counts[yearmonth] = 0
       end
-      @counts[yearmonth] += 1
+
+      value = @view_type == "total" ? item.subtotal.to_f : 1
+      @counts[yearmonth] += value
       if ! item.invoice.bank_account_entry_id.nil?
-        @paid_counts[yearmonth] += 1
+        @paid_counts[yearmonth] += value
         puts "#{yearmonth}  PAID  #{item.invoice.contact} #{item.description}"
       else
         puts "#{yearmonth} UNPAID #{item.invoice.contact} #{item.description}"
@@ -154,7 +159,6 @@ class ReportsController < ApplicationController
       if @totals[category_name][period].nil?
         @totals[category_name][period] = 0
       end
-      puts @totals.inspect
       @totals[category_name][period] += item.subtotal
       @totals[category_name]["Total"] += item.subtotal
     end
