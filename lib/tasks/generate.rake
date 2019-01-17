@@ -22,11 +22,12 @@ namespace :generate do
   end
 
   desc "Parse profit and loss and generate wiki summary"
-  task :profit_and_loss_summary, [ :filename, :month ] => :environment do |t, args|
-    puts args[:filename].inspect
+  task :profit_and_loss_summary, [ :filename, :summary_filename, :month ] => :environment do |t, args|
     filename = File.expand_path(args[:filename])
+    summary_filename = File.expand_path(args[:summary_filename])
     month_index = args[:month].to_i + 1
     rows = CSV.parse(File.read(filename))
+    summary = YAML.load_file(summary_filename)
     year = rows[2][1]
     month = rows[3][month_index]
     month_time = Chronic.parse("#{month} #{year}")
@@ -37,38 +38,52 @@ namespace :generate do
 # Financials #{month_time.strftime("%B %Y")}
 A breakdown of our finances for the month.
 
-## Quick Summary
+## Summary
 
-- Turnover: £#{ActiveSupport::NumberHelper.number_to_delimited(rows[5][month_index])}
-- Sales: £#{ActiveSupport::NumberHelper.number_to_delimited(rows[6][month_index])}
-- #{profit_row[0]}: £#{ActiveSupport::NumberHelper.number_to_delimited(profit_row[month_index])}
+The following reflect the overall status of the finances at the end of the month.
 
-Overall Assets: INSERT
+EOF
+    summary["summary"].each do |category, lines|
+      puts "### *#{category}*: £#{lines.values.reduce(:+)}"
+      lines.each do |key, val|
+        puts "- #{key}: £#{val}"
+      end
+      puts
+    end
 
-**Current Assets: INSERT**
-- Current Account: INSERT
-- Petty Cash (approximate): INSERT
-- Paypal: INSERT
-- Deposit Account: INSERT
-
-**Other Assets: INSERT**
-- Out of Hours Deposits: INSERT
+    puts <<-EOF
 
 ## Notes of interest
 
-None specified.
+#{summary["notes"] || "None specified."}
 
 ## Income/Outgoings
 
 EOF
 
-  rows[8..rows.length].each do |row|
-    if row[0].nil?
-      puts
-    elsif row[month_index]
-      puts "- #{row[0]}: £#{ActiveSupport::NumberHelper.number_to_delimited(row[month_index])}"
+    first = true
+    rows[5..rows.length].each do |row|
+      if row[0].nil?
+        puts
+      elsif row[month_index]
+        if first || row[0].to_s.match(/^(add |less )/)
+          print "### "
+          first = false
+        else
+          print "- "
+        end
+        puts "#{row[0]}: £#{ActiveSupport::NumberHelper.number_to_delimited(row[month_index])}"
+      end
     end
-  end
+    puts "### *#{profit_row[0]}*: £#{ActiveSupport::NumberHelper.number_to_delimited(profit_row[month_index])}"
+    puts <<-EOF
+
+This report is based on an export from a FreeAgent Profit & Loss report which shows figures based on invoices sent rather than funds received, as such it should only be used as an indication rather than an accurate report of DoES Liverpool's income and outgoings.
+
+> Monthly Operating Profit excludes Depreciation and Income/Corporation Taxes
+
+Generated from a FreeAgent report exported on #{File.stat(filename).ctime}, also summary `#{File.basename(summary_filename)}`
+EOF
   end
 
 end
