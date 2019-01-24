@@ -44,9 +44,9 @@ The following reflect the overall status of the finances at the end of the month
 
 EOF
     summary["summary"].each do |category, lines|
-      puts "### *#{category}*: £#{lines.values.reduce(:+)}"
+      puts "### *#{category}*: #{ActiveSupport::NumberHelper.number_to_currency(lines.values.reduce(:+), unit: "£")}"
       lines.each do |key, val|
-        puts "- #{key}: £#{val}"
+        puts "- #{key}: #{ActiveSupport::NumberHelper.number_to_currency(val, unit: "£")}"
       end
       puts
     end
@@ -72,10 +72,10 @@ EOF
         else
           print "- "
         end
-        puts "#{row[0]}: £#{ActiveSupport::NumberHelper.number_to_delimited(row[month_index])}"
+        puts "#{row[0]}: #{ActiveSupport::NumberHelper.number_to_currency(row[month_index], unit: "£")}"
       end
     end
-    puts "### *#{profit_row[0]}*: £#{ActiveSupport::NumberHelper.number_to_delimited(profit_row[month_index])}"
+    puts "### *#{profit_row[0]}*: #{ActiveSupport::NumberHelper.number_to_currency(profit_row[month_index], unit: "£")}"
     puts <<-EOF
 
 This report is based on an export from a FreeAgent Profit & Loss report which shows figures based on invoices sent rather than funds received, as such it should only be used as an indication rather than an accurate report of DoES Liverpool's income and outgoings.
@@ -83,6 +83,8 @@ This report is based on an export from a FreeAgent Profit & Loss report which sh
 > Monthly Operating Profit excludes Depreciation and Income/Corporation Taxes
 
 Generated from a FreeAgent report exported on #{File.stat(filename).ctime}, also summary `#{File.basename(summary_filename)}`
+
+More information about this [[FinancialsReport]]
 EOF
   end
 
