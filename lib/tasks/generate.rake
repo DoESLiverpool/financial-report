@@ -33,10 +33,17 @@ namespace :generate do
     month_time = Chronic.parse("#{month} #{year}")
 
     profit_row = rows.pop
+    
+
+    last_month_str = month_time.last_month.strftime("%Y%m")
+    next_month_str = month_time.next_month.strftime("%Y%m")
+    links = "[< Previous #{last_month_str}](Financials#{last_month_str}) | [Next #{next_month_str} >](Financials#{next_month_str})"
 
     puts <<-EOF
 # Financials #{month_time.strftime("%B %Y")}
 A breakdown of our finances for the month.
+
+#{links}
 
 ## Summary
 
@@ -78,13 +85,11 @@ EOF
     puts "### *#{profit_row[0]}*: #{ActiveSupport::NumberHelper.number_to_currency(profit_row[month_index], unit: "£")}"
     puts <<-EOF
 
-This report is based on an export from a FreeAgent Profit & Loss report which shows figures based on invoices sent rather than funds received, as such it should only be used as an indication rather than an accurate report of DoES Liverpool's income and outgoings.
-
-> Monthly Operating Profit excludes Depreciation and Income/Corporation Taxes
-
 Generated from a FreeAgent report exported on #{File.stat(filename).ctime}, also summary `#{File.basename(summary_filename)}`
 
 More information about this [[FinancialsReport]]
+
+#{links}
 EOF
   end
 
