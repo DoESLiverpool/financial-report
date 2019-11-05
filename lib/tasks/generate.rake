@@ -28,6 +28,7 @@ namespace :generate do
     month_index = args[:month].to_i + 1
     rows = CSV.parse(File.read(filename))
     summary = YAML.load_file(summary_filename)
+    summary_detail = summary["detail"] || {}
     year = rows[2][1]
     month = rows[3][month_index]
     month_time = Chronic.parse("#{month} #{year}")
@@ -80,6 +81,11 @@ EOF
           print "- "
         end
         puts "#{row[0]}: #{ActiveSupport::NumberHelper.number_to_currency(row[month_index], unit: "£")}"
+        # Making sure t
+        category_detail = summary_detail[row[0]] || {}
+        category_detail.keys.sort.each do |k|
+          puts "    * #{k}: #{ActiveSupport::NumberHelper.number_to_currency(category_detail[k], unit: "£")}"
+        end
       end
     end
     puts "### *#{profit_row[0]}*: #{ActiveSupport::NumberHelper.number_to_currency(profit_row[month_index], unit: "£")}"
