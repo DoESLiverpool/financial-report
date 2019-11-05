@@ -114,7 +114,7 @@ class ReportsController < ApplicationController
 
     #select contact, date from invoices where date > '2016-08-01' and  id in (select invoice_id from invoice_items where description = 'Registered Business Address and Mailbox');
 
-    @invoices = Invoice.where(["`date` >= ? AND `date` <= ? AND id IN (SELECT invoice_id FROM invoice_items WHERE description IN ( SELECT description FROM product_category_descriptions WHERE product_category_id IN ( #{@categories.join(", ")} ) ) )", @start_date, @end_date]).order(`date DESC`).group(:contact)
+    @invoices = Invoice.where(["`date` >= ? AND `date` <= ? AND status = 'Sent' AND id IN (SELECT invoice_id FROM invoice_items WHERE description IN ( SELECT description FROM product_category_descriptions WHERE product_category_id IN ( #{@categories.join(", ")} ) ) )", @start_date, @end_date]).order(`date DESC`).group(:contact)
 
   end
 
