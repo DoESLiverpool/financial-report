@@ -1,5 +1,6 @@
 class ReportsController < ApplicationController
   def categories
+    @title = "Product Category Monthly Income"
     @product_category = ProductCategory.where(name: params[:product_category]).first
 
     @product_categories = ProductCategory.all
@@ -98,6 +99,7 @@ class ReportsController < ApplicationController
   end
 
   def service_users
+    @title = "Service Users by Category"
     @categories = params[:categories] || []
     @categories = @categories.map { |c| c = c.to_i }
 
@@ -119,6 +121,8 @@ class ReportsController < ApplicationController
   end
 
   def income_distribution
+    @title = "Income Distribution"
+
     categories_hash = {}
     exclusions = params[:exclusions] || []
     ProductCategoryDescription.all.each do |pcd|
