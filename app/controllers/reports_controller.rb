@@ -102,6 +102,7 @@ class ReportsController < ApplicationController
     @title = "Service Users by Category"
     @categories = params[:categories] || []
     @categories = @categories.map { |c| c = c.to_i }
+    @invoice_status = params[:invoice_status] || "Sent"
 
     begin
       @start_date = Date.parse(params[:start_date])
@@ -116,7 +117,7 @@ class ReportsController < ApplicationController
 
     #select contact, date from invoices where date > '2016-08-01' and  id in (select invoice_id from invoice_items where description = 'Registered Business Address and Mailbox');
 
-    @invoices = Invoice.where(["`date` >= ? AND `date` <= ? AND status = 'Sent' AND id IN (SELECT invoice_id FROM invoice_items WHERE description IN ( SELECT description FROM product_category_descriptions WHERE product_category_id IN ( #{@categories.join(", ")} ) ) )", @start_date, @end_date]).order(`date DESC`).group(:contact)
+    @invoices = Invoice.where(["`date` >= ? AND `date` <= ? AND status = ? AND id IN (SELECT invoice_id FROM invoice_items WHERE description IN ( SELECT description FROM product_category_descriptions WHERE product_category_id IN ( ? ) ) )", @start_date, @end_date, @invoice_status, @categories ]).order(`date DESC`).group(:contact)
 
   end
 

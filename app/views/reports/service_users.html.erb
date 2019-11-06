@@ -1,3 +1,11 @@
+
+<ul>
+  <% last_month = Time.now.last_month.beginning_of_month %>
+  <% last_year = last_month.last_year %>
+  <li><%=link_to "Monthly payments that can receive post", { start_date: last_month, categories: [1, 2, 9, 15, 17] } %></li>
+  <li><%=link_to "Yearly payments that can receive post", { start_date: last_year, categories: [8] } %></li>
+</ul>
+
 <%= form_tag("", method: "get") do %>
 <%= label_tag :start_date, "Start date:" %>
 <%= text_field_tag :start_date, @start_date, size:12 %>
@@ -5,6 +13,8 @@
 <%= text_field_tag :end_date, @end_date, size:12 %>
 <%= label_tag :categories, "Categories:" %>
 <%= select_tag :categories, options_for_select( ProductCategory.all.map { |c| [c.name, c.id] }, params[:categories]), {multiple: true, size: 5} %>
+<%= label_tag :invoice_status, "Invoice Status:" %>
+<%= select_tag :invoice_status, options_for_select( Invoice.distinct.pluck(:status), @invoice_status) %>
 <%= submit_tag "Show" %>
 <% end %>
 
