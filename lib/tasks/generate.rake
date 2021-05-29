@@ -80,7 +80,7 @@ EOF
         else
           print "- "
         end
-        puts "#{row[0]}: #{ActiveSupport::NumberHelper.number_to_currency(row[month_index], unit: "£")}"
+        puts "#{row[0]}: #{ActiveSupport::NumberHelper.number_to_currency(row[month_index], unit: "£", precision: 0)}"
         # Making sure t
         category_detail = summary_detail[row[0]] || {}
         category_detail.keys.sort.each do |k|
@@ -88,7 +88,7 @@ EOF
         end
       end
     end
-    puts "### *#{profit_row[0]}*: #{ActiveSupport::NumberHelper.number_to_currency(profit_row[month_index], unit: "£")}"
+    puts "### *#{profit_row[0]}*: #{ActiveSupport::NumberHelper.number_to_currency(profit_row[month_index], unit: "£", precision: 0)}"
     puts <<-EOF
 
 Generated from a FreeAgent report exported on #{File.stat(filename).ctime}, also summary `#{File.basename(summary_filename)}`
