@@ -157,7 +157,7 @@ class ReportsController < ApplicationController
     end
 
     periods_hash = {}
-    scope = BankAccountEntry.includes(invoice: :invoice_items).where(["description not like 'Transfer from %'  AND bank_account_entries.`date` >= ? AND bank_account_entries.`date` < ?", @start_date, @end_date])
+    scope = BankAccountEntry.includes(invoice: :invoice_items).where(["description NOT LIKE 'Transfer from %' AND entry_type != 'Payment to Director Loan Account' AND bank_account_entries.`date` >= ? AND bank_account_entries.`date` < ?", @start_date, @end_date])
     if params[:bank_account] != "All"
       scope = scope.where(["bank_account_name = ?", params[:bank_account]])
     end
@@ -181,14 +181,14 @@ class ReportsController < ApplicationController
           if category_name == "3rd Party App Income"
             puts "ODD: #{item.invoice.date} #{entry.inspect}"
           end
-          value_items << { category: category_name, value: proportional_value }
+          value_items << { category: category_name, value: proportional_value, description: item.description }
         end
       else
         category_name = categories_hash[entry.description]
         if category_name == "3rd Party App Income"
           puts "ODD: #{entry.inspect}"
         end
-        value_items << { category: category_name, value: entry.gross_value }
+        value_items << { category: category_name, value: entry.gross_value, description: entry.description }
       end
       period = AccountingPeriod.which(entry.date).description
       periods_hash[period] = 1
@@ -199,7 +199,7 @@ class ReportsController < ApplicationController
           next
         end
         if category_name.nil?
-          puts "Unknown category: ###{entry.description.inspect}### #{entry.gross_value}"
+          puts "Unknown category: ###{item[:description]}### #{entry.gross_value}"
           #puts "\- Unknown contact: #{item.invoice.contact}"
           category_name = "Other"
         end
