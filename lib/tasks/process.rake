@@ -15,6 +15,8 @@ namespace :process do
         invoice = invoices_hash[matches[1]]
         invoice.bank_account_entry = entry
         invoice.save!
+        entry.invoice = invoice
+        entry.save!
 
         count += 1
       end
