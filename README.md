@@ -19,6 +19,7 @@ application up and running.
 1. `bin/rails server`
 1. `rake import:freeagent ~/Downloads/company-export-2017-06-30-10-14.xls`
 1. `rake process:invoices`
+1. `rake generate:accounting_periods[start_date=2011-06-10]`
 1. `rake import:product_categories categories.csv`
 1. `rake generate:accounting_periods["2011-06-10"]` (replace date with your incorporation date)
 

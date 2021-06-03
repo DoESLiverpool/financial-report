@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_11_06_200657) do
+ActiveRecord::Schema.define(version: 2021_06_01_193917) do
 
   create_table "accounting_periods", force: :cascade do |t|
     t.date "start_date"
@@ -28,6 +28,8 @@ ActiveRecord::Schema.define(version: 2019_11_06_200657) do
     t.integer "sales_tax_rate"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "invoice_id"
+    t.index ["invoice_id"], name: "index_bank_account_entries_on_invoice_id"
   end
 
   create_table "invoice_items", force: :cascade do |t|
@@ -75,4 +77,5 @@ ActiveRecord::Schema.define(version: 2019_11_06_200657) do
     t.index ["product_category_id"], name: "index_product_category_descriptions_on_product_category_id"
   end
 
+  add_foreign_key "bank_account_entries", "invoices"
 end
