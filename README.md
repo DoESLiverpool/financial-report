@@ -10,6 +10,10 @@ application up and running.
 
 ## Set up
 
+1. Gather data from FreeAgent:
+   1. Log into FreeAgent
+   1. Go to `DoES Liverpool CIC` and then `Settings`
+   1. Choose `Export All Data`, which will then give you the `company-export-YYYY-MM-DD-HH-MM.xls` file to import
 1. `bundle install`
 1. `rake db:migrate`
 1. `bin/rails server`
