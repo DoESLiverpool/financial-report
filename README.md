@@ -20,6 +20,7 @@ application up and running.
 1. `rake import:freeagent ~/Downloads/company-export-2017-06-30-10-14.xls`
 1. `rake process:invoices`
 1. `rake import:product_categories categories.csv`
+1. `rake generate:accounting_periods["2011-06-10"]` (replace date with your incorporation date)
 
 Then visit [http://localhost:3010/reports/categories](http://localhost:3010/reports/categories)
 
@@ -34,6 +35,8 @@ Hot Desk Day,1 Hot Desk Day
 Permanent Desk,Permanent Desk
 ,Permanent Desk for Jo
 ```
+
+For internal DoES Liverpool use the `categories.csv` we use is in the private `financial-report-summaries` repository.
 
 
 Things you may want to cover:
