@@ -1,0 +1,96 @@
+<%= form_tag("", method: "get") do %>
+<%= label_tag :start_date, "Start date:" %>
+<%= text_field_tag :start_date, @start_date, size:12 %>
+<%= label_tag :end_date, "End date:" %>
+<%= text_field_tag :end_date, @end_date, size:12 %>
+<%= label_tag :stacked_percent, "Stacked as percent:" %>
+<%= check_box_tag :stacked_percent, "on", params[:stacked_percent] =='on' %>
+<%= label_tag :exclusions, "Exclude categories:" %>
+<%= select_tag :exclusions, options_for_select( ProductCategory.all.map { |c| c.name }, params[:exclusions]), {multiple: true, size: 5} %>
+<%= submit_tag "Show" %>
+<% end %>
+<%= form_tag("", method: "get") do %>
+<%= hidden_field_tag :start_date, @six_month_start_date %>
+<%= hidden_field_tag :end_date, @six_month_end_date %>
+<%= submit_tag "Last 6 Months" %>
+<% end %>
+<%= form_tag("", method: "get") do %>
+<%= hidden_field_tag :start_date, "" %>
+<%= hidden_field_tag :end_date,"" %>
+<%= submit_tag "All Time" %>
+<% end %>
+
+<h3>@income_split</h3>
+<ul>
+<% @income_split.each do |incoming| -%>
+<li><%= incoming -%></li>
+<% end -%>
+</ul>
+
+<h3>@incomings</h3>
+<ul>
+<% @incomings.each do |incoming| -%>
+<li><%= incoming -%></li>
+<% end -%>
+</ul>
+
+<h3>@outgoings</h3>
+<ul>
+<% @outgoings.each do |outgoing| -%>
+<li><%= outgoing -%></li>
+<% end -%>
+</ul>
+
+<h3>@processed_incomings</h3>
+<ul>
+<% @processed_incomings.each do |processed| -%>
+<li><%= processed -%></li>
+<% end -%>
+</ul>
+
+<p>total_income_split: <%= @total_income_split -%>,
+total_incoming: <%= @total_incoming -%>,
+total_processed_incoming: <%= @total_processed_incoming -%></p>
+
+<h3>@monthly_incomings - total: <%= @total_monthly_incoming -%></h3>
+<ul>
+<% @monthly_incomings.each do |item| -%>
+<li><%= item -%></li>
+<% end -%>
+</ul>
+
+<h3>@monthly_outgoings - total: <%= @total_monthly_outgoing -%></h3>
+<ul>
+<% @monthly_outgoings.each do |item| -%>
+<li><%= item -%></li>
+<% end -%>
+</ul>
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(function() {
+    drawTotalsBarChart()
+  });
+
+  function drawTotalsBarChart() {
+    var dataArray = [
+    ];
+    var data = google.visualization.arrayToDataTable(dataArray);
+
+    var options = {
+      isStacked: <%= raw (params[:stacked_percent] == 'on' ? 'percent' : true).to_json %>
+    };
+
+    var chart = new google.visualization.BarChart(document.getElementById('bar_chart'));
+    google.visualization.events.addListener(chart, 'ready', function () {
+      var link = document.getElementById('bar_chart_link')
+      link.href = chart.getImageURI()
+      link.style.visibility = "visible"
+    });
+
+    chart.draw(data, options);
+  }
+</script>
+<div id="bar_chart" style="width: 900px; height: 500px"></div>
+<a id="bar_chart_link" style="visibility: hidden;" href="">Download Chart</a>
