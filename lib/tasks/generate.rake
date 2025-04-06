@@ -243,6 +243,7 @@ EOF
 <html>
 <head>
 <style>
+    body { font-family: "Transport New"; }
     h1 { text-align: center; font-size: 450% }
     #parameters { background-color: #ddd; border: thin solid black; padding: 1em; }
     .bars {
@@ -279,10 +280,10 @@ EOF
     // Colours generated with https://medialab.github.io/iwanthue/
     div.e0 { background-color: #ad0027; }
     div.e1 { background-color: #ff9097; }
-    div.e2 { background-color: #763800; }
+    div.e2 { background-color: #ff6442; }
     div.e3 { background-color: #ff065c; }
     div.e4 { background-color: #6e0e39; }
-    div.e5 { background-color: #ff6442; }
+    div.e5 { background-color: #763800; }
     div.e6 { background-color: #691226; }
     div.e7 { background-color: #d9347a; }
     div.e8 { background-color: #c36f5c; }
@@ -293,7 +294,7 @@ EOF
     div.i4 { background-color: #91b23e; }
     div.i5 { background-color: #5e8d3d; }
     div.caption { border: none; background-color: #fff; color: #000 }
-    .item { border: 1px solid #444; background-color: #f00; color: #fff; text-align: center; align-content: center }
+    .item { border: 1px solid #fff; background-color: #f00; color: #fff; text-align: center; align-content: center }
     #content {
         display: grid;
         grid-template-columns: 1fr 1fr;
