@@ -29,9 +29,8 @@ namespace :generate do
     rows = CSV.parse(File.read(filename))
     summary = YAML.load_file(summary_filename)
     summary_detail = summary["detail"] || {}
-    year = rows[2][1]
-    month = rows[3][month_index]
-    month_time = Chronic.parse("#{month} #{year}")
+    month_year = rows[2][1]
+    month_time = Date.parse(month_year)
 
     profit_row = rows.pop
     
@@ -70,11 +69,11 @@ EOF
 EOF
 
     first = true
-    rows[5..rows.length].each do |row|
+    rows[4..rows.length].each do |row|
       if row[0].nil?
         puts
       elsif row[month_index]
-        if first || row[0].to_s.match(/^(add |less )/)
+        if first || row[0].to_s.match(/^(add |less |Gross )/)
           print "### "
           first = false
         else
