@@ -145,6 +145,7 @@ namespace :import do
         if category.nil?
           category = ProductCategory.new
           category.name = row[0]
+          category.regex = row[2]
           category.save!
         end
         last_category = category
@@ -163,5 +164,6 @@ namespace :import do
         description.save!
       end
     end
+    puts
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_22_100708) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_22_105945) do
   create_table "accounting_periods", force: :cascade do |t|
     t.date "start_date"
     t.date "end_date"
@@ -66,6 +66,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_22_100708) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "regex"
   end
 
   create_table "product_category_descriptions", force: :cascade do |t|
@@ -74,6 +75,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_22_100708) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["product_category_id"], name: "index_product_category_descriptions_on_product_category_id"
+  end
+
+  create_table "unknown_categories", force: :cascade do |t|
+    t.string "description"
+    t.decimal "price", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "bank_account_entries", "invoices"

@@ -23,7 +23,7 @@ namespace :process do
       progress.increment
     end
 
-    print "Matched up #{count} entries and invoices"
+    puts "Matched up #{count} entries and invoices"
   end
 
 end

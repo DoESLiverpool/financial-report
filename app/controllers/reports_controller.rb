@@ -125,12 +125,8 @@ class ReportsController < ApplicationController
   def income_distribution
     @title = "Income Distribution"
 
-    categories_hash = {}
+    categories_calculator = CategoriesCalculator.new
     exclusions = params[:exclusions] || []
-    ProductCategoryDescription.all.each do |pcd|
-      category = pcd.product_category.name
-      categories_hash[pcd.description] = category
-    end
 
     start_date = params[:all_time].nil? ? params[:start_date] : nil
     end_date = params[:all_time].nil? ? params[:end_date] : nil
@@ -156,6 +152,7 @@ class ReportsController < ApplicationController
       return
     end
 
+    UnknownCategory.delete_all
     periods_hash = {}
     scope = BankAccountEntry.includes(invoice: :invoice_items).where(["description NOT LIKE 'Transfer from %' AND entry_type != 'Payment to Director Loan Account' AND bank_account_entries.`date` >= ? AND bank_account_entries.`date` < ?", @start_date, @end_date])
     if params[:bank_account] != "All"
@@ -176,32 +173,21 @@ class ReportsController < ApplicationController
           # item's category, should usually be the same as the item
           # subtotal but covers where the currency differs or
           # if this entry only covers part of the invoice
-          category_name = categories_hash[item.description]
+          category_name = categories_calculator.find_category(item.description, entry.gross_value)
           proportional_value = (item.subtotal / invoice_total) * entry.gross_value
-          if category_name == "3rd Party App Income"
-            puts "ODD: #{item.invoice.date} #{entry.inspect}"
-          end
           value_items << { category: category_name, value: proportional_value, description: item.description }
         end
       else
-        category_name = categories_hash[entry.description]
-        if category_name == "3rd Party App Income"
-          puts "ODD: #{entry.inspect}"
-        end
+        category_name = categories_calculator.find_category(entry.description, entry.gross_value)
         value_items << { category: category_name, value: entry.gross_value, description: entry.description }
       end
       period = AccountingPeriod.which(entry.date).description
       periods_hash[period] = 1
       value_items.each do |item|
-        category_name = item[:category]
+        category_name = categories_calculator.find_category(item[:category], item[:value])
         value = item[:value]
         if exclusions.include?(category_name)
           next
-        end
-        if category_name.nil?
-          puts "Unknown category: ###{item[:description]}### #{entry.gross_value}"
-          #puts "\- Unknown contact: #{item.invoice.contact}"
-          category_name = "Other"
         end
         if @totals[category_name].nil?
           @totals[category_name] = {"Total" => 0}
