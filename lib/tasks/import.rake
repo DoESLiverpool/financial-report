@@ -148,6 +148,14 @@ namespace :import do
           category.regex = row[2]
           category.save!
         end
+        regex = row[2]
+        if regex.present?
+          # Test the regex
+          stripped = regex.gsub(/\A\^?/, "").gsub(/\$?\z/, "")
+          Regexp.new("^#{stripped}$", Regexp::IGNORECASE)
+        end
+        category.regex = row[2]
+        category.save!
         last_category = category
       end
 
