@@ -184,7 +184,8 @@ class ReportsController < ApplicationController
       period = AccountingPeriod.which(entry.date).description
       periods_hash[period] = 1
       value_items.each do |item|
-        category_name = categories_calculator.find_category(item[:category], item[:value])
+        # category_name = categories_calculator.find_category(item[:category], item[:value])
+        category_name = item[:category]
         value = item[:value]
         if exclusions.include?(category_name)
           next
