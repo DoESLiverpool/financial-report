@@ -328,6 +328,12 @@ EOF
         align-items: start;
         column-gap: 5%;
     }
+    /* Tweaks for better printing (and to work round Queen Victoria's quirks) */
+    @media print {
+        body { border-top: 1px solid #fefefe; }
+        div.e { background-color: #f00 !important; }
+        div#poster { padding: 5em 1em 1em 1em; }
+    }
 </style>
 </head>
 <body>
