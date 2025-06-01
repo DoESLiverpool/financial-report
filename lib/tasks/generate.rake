@@ -120,7 +120,7 @@ EOF
     end
 
     # Work out which column has the totals
-    total_col = rows[3].find_index("Total")
+    total_col = rows[2].find_index("Total")
 
     profit_row = rows.pop
 
@@ -128,7 +128,7 @@ EOF
     @outgoings_split = {}
     first = true
     in_an_outgoing_category = false
-    rows[5..rows.length].each do |row|
+    rows[4..rows.length].each do |row|
       if row[0].nil?
         # Blank lines mean we've got to the end of a category
         in_an_outgoing_category = false
@@ -207,6 +207,15 @@ EOF
     @outgoings_split["Other"] += other_outgoings_split.to_h.values.sum unless other_outgoings_split.empty?
     @outgoings_split["Other"] += @outgoings_split["Uncategorized"] unless @outgoings_split["Uncategorized"].nil?
     @outgoings_split.delete("Uncategorized")
+    # Fix up a couple of names
+    unless @outgoings_split["Internet & Telephone"].nil?
+        @outgoings_split["Internet &amp; Telephone"] = @outgoings_split["Internet & Telephone"]
+        @outgoings_split.delete("Internet & Telephone")
+    end
+    unless @outgoings_split["Office Costs"].nil?
+        @outgoings_split["Office Costs<br/>(inc. Rates)"] = @outgoings_split["Office Costs"]
+        @outgoings_split.delete("Office Costs")
+    end
 
     # Work out split of invoices based on categories in @income_split
     @total_income_split = @income_split.values.sum
@@ -228,6 +237,12 @@ EOF
     @total_monthly_incomings = @monthly_incomings.values.sum
     @total_monthly_outgoings = @monthly_outgoings.values.sum
 
+    # Work out the correct multiplier for their height in the CSS.  We're assuming that the
+    # graph will take up 100vw (so the same as the width of the screen, or 71% of the height
+    # given our #poster element styling)
+    @highest_bar = [@total_monthly_incomings, @total_monthly_outgoings].max
+    @scale_graph_multiplier = 90.0/@highest_bar
+
     puts "@monthly_incomings:"
     puts @monthly_incomings
     puts "@monthly_outgoings:"
@@ -236,15 +251,24 @@ EOF
     puts @total_monthly_incomings
     puts "@total_monthly_outgoings:"
     puts @total_monthly_outgoings
+    puts "@scale_graph_multiplier:"
+    puts @scale_graph_multiplier
 
     puts <<-EOF
 <!DOCTYPE html>
 <html>
 <head>
 <style>
-    body { font-family: "Transport New"; }
-    h1 { text-align: center; font-size: 450% }
+    body { font-family: "Transport New", sans-serif; background: #fff; font-size: 1.5vw }
+    h1 { text-align: left; font-size: 14vw; margin: 2vw 0; }
     #parameters { background-color: #ddd; border: thin solid black; padding: 1em; }
+    div#poster {
+        width: calc(100vw-2em);
+        height: calc(1.4142857142857144*calc(100vw-2em));
+        background: #fff;
+        margin: 1em;
+        padding: 1em;
+    }
     .bars {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -259,10 +283,10 @@ EOF
         grid-template-rows:
 EOF
     @monthly_outgoings.each do |item|
-      puts "        #{(item[1]/8).round(0)}px"
+      puts "        calc(#{item[1].round(0)}*#{@scale_graph_multiplier}vw)"
     end
     puts <<-EOF
-            50px;
+            5vw;
     }
     .income-bar {
         display: grid;
@@ -271,13 +295,16 @@ EOF
         grid-template-rows:
 EOF
     @monthly_incomings.each do |item|
-      puts "        #{(item[1]/8).round(0)}px"
+      puts "        calc(#{item[1].round(0)}*#{@scale_graph_multiplier}vw)"
     end
     puts <<-EOF
-            50px;
+            5vw;
     }
-    // Colours generated with https://medialab.github.io/iwanthue/
-    div.e0 { background-color: #ad0027; }
+    /* For now, just go with two colours, one for income and one for expenses */
+    div.e { background-color: #ad0027; }
+    div.i { background-color: #64c673; }
+    /* Colours generated with https://medialab.github.io/iwanthue/ */
+    /*div.e0 { background-color: #ad0027; }
     div.e1 { background-color: #ff9097; }
     div.e2 { background-color: #ff6442; }
     div.e3 { background-color: #ff065c; }
@@ -291,7 +318,7 @@ EOF
     div.i2 { background-color: #45bc8d; }
     div.i3 { background-color: #9d8539; }
     div.i4 { background-color: #91b23e; }
-    div.i5 { background-color: #5e8d3d; }
+    div.i5 { background-color: #5e8d3d; }*/
     div.caption { border: none; background-color: #fff; color: #000 }
     .item { border: 1px solid #fff; background-color: #f00; color: #fff; text-align: center; align-content: center }
     #content {
@@ -304,15 +331,18 @@ EOF
 </style>
 </head>
 <body>
+<div id="poster">
 <h1>The Cost of Doing Epic</h1>
 <div id="content">
     <div id="explanation">
-        <p>DoES Liverpool is a Community Interest Company, <strong>funded by the members for the members</strong>.  It costs nearly £7000 each month to keep the space running.</p>
+        <p>DoES Liverpool is a Community Interest Company, <strong>funded by the members for the members</strong>.  It costs over £7000 each month to keep the space running.</p>
         <p>All the profits go back into expanding the space or getting new kit.</p>
-        <h2>Rates and the Risk of Closing</h2>
-        <p>Right now we're running at a loss of £600/month.  If we don't fix that, we won't last beyond the end of this year.</p>
-        <p>As you can see from the chart, a big chunk of our current expenses are back-dated business rates.  There was a delay in getting the building split so we could get our individual rates bill, and we didn't expect the rates to be higher here than they were in the city centre.</p>
-        <p>We're doing what we can to reduce the amount we have to pay, but it's quite likely we'll need to pay it all.  (And whatever we get back will go to making the space better!)</p>
+        <h2>We Need More People Taking Desks or Workshop Membership</h2>
+        <p>Last year we were running at a loss and used up almost all of our reserves.</p>
+        <p>The price increases we put in place in November/December helped but our costs have continued to rise, and as you can see from the chart to the right (which shows the income and expenses per month, averaged over the past six months) we are still running at a loss.</p>
+        <p>We have plenty of spare desks and workshop capacity, so there's lots of scope for getting back to profit and building up our reserves.  Three people taking desks, for example, would get us to break-even.</p>
+        <p>We also need to replace the HVAC units in the main space to give us heating (and cooling) again there.  From the quotes we've had for it, that will need us to raise around £6000.  That's why it's been a bit chilly in that room the past couple of winters, but even then our energy bills are quite high due to the alternate option of fan- and oil-heaters.</p>
+        <p>Ideally we'd be steadily building up some reserves to cover the HVAC work <em>and</em> provide a buffer for unexpected expenses.</p>
         <h2>What You Can Do to Help</h2>
         <p>Use our paid services!  Take a desk if you need somewhere to work; get one of the workshop memberships and make things; book the events room for your private meetings.</p>
         <p>If you can afford it and aren't already, become a Member. It's £10/month and lets you support us financially even if you don't need the services we charge for (and if you do, you'll get a discount!).</p>
@@ -325,7 +355,7 @@ EOF
 EOF
     i = 0
     @monthly_incomings.each do |item|
-      puts "            <div class=\"item i#{i}\">#{item[0]}</div>"
+      puts "            <div class=\"item i i#{i}\">#{item[0]}</div>"
       i += 1
     end
     puts "            <div class=\"item caption\">Monthly Income £#{@total_monthly_incomings.round(0)}</div>"
@@ -334,7 +364,7 @@ EOF
     puts "        <div class=\"expenses-bar\">"
     i = 0
     @monthly_outgoings.each do |item|
-      puts "            <div class=\"item e#{i}\">#{item[0]}</div>"
+      puts "            <div class=\"item e e#{i}\">#{item[0]}</div>"
       i += 1
     end
     puts "            <div class=\"item caption\">Monthly Expenses £#{@total_monthly_outgoings.round(0)}</div>"
@@ -342,6 +372,7 @@ EOF
         </div>
     </div>
   </div>
+</div>
 </body>
 </html>
 EOF

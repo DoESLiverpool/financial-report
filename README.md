@@ -38,6 +38,29 @@ Permanent Desk,Permanent Desk
 
 For internal DoES Liverpool use the `categories.csv` we use is in the private `financial-report-summaries` repository.
 
+### Cost of Doing Epic poster
+
+This is generated from a combination of the data in the database and a monthly profit and loss report from FreeAgent.
+
+You will need a recent version of the data in the database.  The easiest way to do that is to re-populate it from scratch.  Delete `db/development.sqlite3` and then follow the steps in "Set up" above.
+
+Then get the profit and loss report:
+1. Log into FreeAgent
+1. Go to "Accounting" then "Reports"
+1. Choose the "Profit &amp; Loss" report
+1. Switch to the "Monthly" option and choose a "Custom date range"
+1. Enter the desired date range and choose "Apply"
+1. Export the report as CSV
+
+For example:
+```
+bundle exec rake generate:cost_of_doing_epic_poster[~/Downloads/DoES\ Liverpool\ CIC\ monthly\ profit\ and\ loss\ 2024-09-01\ to\ 2025-03-01.csv,2024-09-01,2025-03-01]
+```
+
+Some of the logging currently appears in the output, so if you redirect the output of that command to a file, open it and delete everything before the `&lt;!DOCTYPE html&gt;'
+
+Finally, update the narrative in the explanation to reflect where things are.
+
 
 Things you may want to cover:
 
