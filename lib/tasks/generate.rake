@@ -142,22 +142,22 @@ EOF
           end
         else
           if in_an_outgoing_category
-            @outgoings_split[row[0]] = Float(row[total_col])
+            @outgoings_split[row[0]] = Float(row[total_col].gsub(',',''))
           end
         end
       end
     end
-    puts "outgoings:"
-    puts @outgoings_split
+    STDERR.puts "outgoings:"
+    STDERR.puts @outgoings_split
 
     @income_split = {}
     InvoiceItem.joins(:invoice).where(["`date` >= ? AND `date` < ?", @start_date, @end_date]).each do |item|
       category_name = categories_hash[item.description]
       if item.subtotal < 0
-        puts "Skipping "+item.inspect
+        STDERR.puts "Skipping "+item.inspect
         next
       end
-      puts "Unknown category: #{item.description} #{item.subtotal}"
+      STDERR.puts "Unknown category: #{item.description} #{item.subtotal}"
       if category_name.nil?
         category_name = "Uncategorized"
       end
@@ -177,10 +177,10 @@ EOF
       end
       if Float(item.gross_value) > 0
         # Money in!
-        #puts item.inspect
+        #STDERR.puts item.inspect
         @total_incoming += Float(item.gross_value)
       else
-        #puts item.inspect
+        #STDERR.puts item.inspect
         @total_outgoings += -1*Float(item.gross_value)
       end
     end
@@ -243,16 +243,19 @@ EOF
     @highest_bar = [@total_monthly_incomings, @total_monthly_outgoings].max
     @scale_graph_multiplier = 90.0/@highest_bar
 
-    puts "@monthly_incomings:"
-    puts @monthly_incomings
-    puts "@monthly_outgoings:"
-    puts @monthly_outgoings
-    puts "@total_monthly_incomings:"
-    puts @total_monthly_incomings
-    puts "@total_monthly_outgoings:"
-    puts @total_monthly_outgoings
-    puts "@scale_graph_multiplier:"
-    puts @scale_graph_multiplier
+    STDERR.puts "@monthly_incomings:"
+    STDERR.puts @monthly_incomings
+    STDERR.puts "@monthly_outgoings:"
+    STDERR.puts @monthly_outgoings
+    STDERR.puts "@total_monthly_incomings:"
+    STDERR.puts @total_monthly_incomings
+    STDERR.puts "@total_monthly_outgoings:"
+    STDERR.puts @total_monthly_outgoings
+    STDERR.puts "@scale_graph_multiplier:"
+    STDERR.puts @scale_graph_multiplier
+    STDERR.puts
+    STDERR.puts "For the website version, strip out the <head> and <body> tags, and past it into the code"
+    STDERR.puts "section of the Cost of Doing Epic page"
 
     puts <<-EOF
 <!DOCTYPE html>
@@ -269,6 +272,7 @@ EOF
         margin: 1em;
         padding: 1em;
     }
+    .timestamp { text-align: right; font-size: 1vw }
     .bars {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -334,6 +338,11 @@ EOF
         div.e { background-color: #f00 !important; }
         div#poster { padding: 5em 1em 1em 1em; }
     }
+    /* Tweaks for a version that's included on the website */
+    /* (relies on us pasting it into the <div class="entry-content"> element) */
+    .entry-content { font-family: "Transport New", sans-serif; background: #fff; }
+    .entry-content p { font-size: 1.2vw; }
+    .entry-content h1 { text-align: left; font-size: 5vw; margin: 1vw 0; }
 </style>
 </head>
 <body>
@@ -345,8 +354,8 @@ EOF
         <p>All the profits go back into expanding the space or getting new kit.</p>
         <h2>We Need More People Taking Desks or Workshop Membership</h2>
         <p>Last year we were running at a loss and used up almost all of our reserves.</p>
-        <p>The price increases we put in place in November/December helped but our costs have continued to rise, and as you can see from the chart to the right (which shows the income and expenses per month, averaged over the past six months) we are still running at a loss.</p>
-        <p>We have plenty of spare desks and workshop capacity, so there's lots of scope for getting back to profit and building up our reserves.  Three people taking desks, for example, would get us to break-even.</p>
+        <p>The loss has reduced compared to the previous six months Cost of Doing Epic but we're still spending more than we earn!</p>
+        <p>We have plenty of spare desks and workshop capacity, so there's lots of scope for getting back to profit and building up our reserves.  Two people taking desks, for example, would get us to break-even.</p>
         <p>We also need to replace the HVAC units in the main space to give us heating (and cooling) again there.  From the quotes we've had for it, that will need us to raise around £6000.  That's why it's been a bit chilly in that room the past couple of winters, but even then our energy bills are quite high due to the alternate option of fan- and oil-heaters.</p>
         <p>Ideally we'd be steadily building up some reserves to cover the HVAC work <em>and</em> provide a buffer for unexpected expenses.</p>
         <h2>What You Can Do to Help</h2>
@@ -378,6 +387,7 @@ EOF
         </div>
     </div>
   </div>
+  <div class="timestamp">Data compiled #{@end_date}</div>
 </div>
 </body>
 </html>
