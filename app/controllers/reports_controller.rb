@@ -2,6 +2,7 @@ class ReportsController < ApplicationController
   def categories
     @title = "Product Category Monthly Income"
     @product_category = ProductCategory.where(name: params[:product_category]).first
+    @export = params['export'] == 'on'
 
     @product_categories = ProductCategory.all
 
@@ -124,6 +125,7 @@ class ReportsController < ApplicationController
 
   def income_distribution
     @title = "Income Distribution"
+    @export = params['export'] == 'on'
 
     categories_calculator = CategoriesCalculator.new
     exclusions = params[:exclusions] || []

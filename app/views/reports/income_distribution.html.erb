@@ -1,3 +1,5 @@
+<%- chart_uuid = SecureRandom.uuid -%>
+<% if !@export %>
 <%= form_tag("", method: "get") do %>
 <div>
 <%= label_tag :bank_account, "Bank account:" %>
@@ -8,26 +10,29 @@
 <%= text_field_tag :start_date, @start_date, size:12 %>
 <%= label_tag :end_date, "End date:" %>
 <%= text_field_tag :end_date, @end_date, size:12 %>
+</div>
+<div>
 <%= label_tag :stacked_percent, "Stacked as percent:" %>
 <%= check_box_tag :stacked_percent, "on", params[:stacked_percent] =='on' %>
 <%= label_tag :exclusions, "Exclude categories:" %>
 <%= select_tag :exclusions, options_for_select( ProductCategory.all.map { |c| c.name }, params[:exclusions]), {multiple: true, size: 5} %>
 <%= submit_tag "Show" %>
 </div>
+<div>
+<%= label_tag :export, "Export" %>
+<%= check_box_tag :export, "on", params[:export] =='on' %>
+</div>
+<div>
 <%= submit_tag "All Time", name: "all_time" %>
+</div>
+<% end %>
+
 <% end %>
 
 <% if params[:bank_account] %>
 
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript">
-  google.charts.load('current', {'packages':['corechart']});
-  google.charts.setOnLoadCallback(function() {
-    drawTotalsBarChart()
-    drawTotalsChart()
-  });
-
-  function drawTotalsBarChart() {
+<script>
+  chartLoaders.push(function() {
     var dataArray = [
       <%= raw ["Categories"].concat(@categories).to_json %>,
       <% if params[:stacked_percent] == 'on' %>
@@ -38,22 +43,19 @@
       <% end %>
     ];
     var data = google.visualization.arrayToDataTable(dataArray);
-
     var options = {
       isStacked: <%= raw (params[:stacked_percent] == 'on' ? 'percent' : true).to_json %>
     };
-
-    var chart = new google.visualization.BarChart(document.getElementById('bar_chart'));
+    var chart = new google.visualization.BarChart(document.getElementById('bar_chart-<%=chart_uuid%>'));
     google.visualization.events.addListener(chart, 'ready', function () {
-      var link = document.getElementById('bar_chart_link')
+      var link = document.getElementById('bar_chart_link-<%=chart_uuid%>')
       link.href = chart.getImageURI()
       link.style.visibility = "visible"
     });
-
     chart.draw(data, options);
-  }
-
-  function drawTotalsChart() {
+  })
+  <% if !@export %>
+  chartLoaders.push(function () {
     var dataArray = [
       ['Description', 'Total'],
     <% @categories.each do |category| %>
@@ -61,23 +63,23 @@
     <% end %>
     ];
     var data = google.visualization.arrayToDataTable(dataArray);
-
     var options = {
     };
-
-    var chart = new google.visualization.PieChart(document.getElementById('totals_chart'));
+    var chart = new google.visualization.PieChart(document.getElementById('totals_chart-<%=chart_uuid%>'));
     google.visualization.events.addListener(chart, 'ready', function () {
-      var link = document.getElementById('totals_chart_link')
+      var link = document.getElementById('totals_chart_link-<%=chart_uuid%>')
       link.href = chart.getImageURI()
       link.style.visibility = "visible"
     });
-
     chart.draw(data, options);
-  }
+  })
+  <% end %>
 </script>
-<div id="totals_chart" style="width: 900px; height: 500px"></div>
-<a id="totals_chart_link" style="visibility: hidden;" href="">Download Chart</a>
-<div id="bar_chart" style="width: 900px; height: 500px"></div>
-<a id="bar_chart_link" style="visibility: hidden;" href="">Download Chart</a>
+<% if !@export %>
+<div id="totals_chart-<%=chart_uuid%>" style="width: 900px; height: 500px"></div>
+<a id="totals_chart_link-<%=chart_uuid%>" style="visibility: hidden;" href="">Download Chart</a>
+<% end %>
+<div id="bar_chart-<%=chart_uuid%>" style="width: 900px; height: 500px"></div>
+<a id="bar_chart_link-<%=chart_uuid%>" style="visibility: hidden;" href="">Download Chart</a>
 
 <% end %>
