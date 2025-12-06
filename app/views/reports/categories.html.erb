@@ -1,3 +1,5 @@
+<%- chart_uuid = SecureRandom.uuid -%>
+<% if !@export %>
 <%= form_tag("", method: "get") do %>
 <%= select_tag(:product_category, options_for_select(@product_categories.map { |pc| [ pc.name ] }, params[:product_category])) %>
 <%= select_tag(:view_type, options_for_select([ ["Total", "total"], ["Number", "number"] ], params[:view_type])) %>
@@ -5,17 +7,16 @@
 <%= text_field_tag :skiplast, params[:skiplast], size:4 %>
 <%= label_tag :showlast, "Show only last N months:" %>
 <%= text_field_tag :showlast, params[:showlast], size:4 %>
+<%= label_tag :export, "Export" %>
+<%= check_box_tag :export, "on", params[:export] =='on' %>
 <%= submit_tag "Show" %>
+<% end %>
 <% end %>
 
 <% if @ordered_months %>
 
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
-  google.charts.load('current', {'packages':['corechart']});
-  google.charts.setOnLoadCallback(drawChart);
-
-  function drawChart() {
+  chartLoaders.push( function() {
     var dataArray = [
       ['Month', 'Count'],
     <% @ordered_months.each do |month| %>
@@ -23,25 +24,23 @@
     <% end %>
     ];
     var data = google.visualization.arrayToDataTable(dataArray);
-
     var options = {
       title: <%= raw @product_category.name.to_json %>,
       legend: { position: 'bottom' },
       vAxis: { minValue: 0 }
     };
-
-    var chart = new google.visualization.LineChart(document.getElementById('chart'));
+    var chart = new google.visualization.LineChart(document.getElementById('chart-<%=chart_uuid%>'));
     google.visualization.events.addListener(chart, 'ready', function () {
-      var link = document.getElementById('chart_link')
+      var link = document.getElementById('chart_link-<%=chart_uuid%>')
       link.href = chart.getImageURI()
       link.style.visibility = "visible"
     });
-
     chart.draw(data, options);
-  }
+  })
 </script>
-<div id="chart" style="width: 900px; height: 500px"></div>
-<a id="chart_link" style="visibility: hidden;" href="">Download Chart</a>
+<div id="chart-<%=chart_uuid%>" style="width: 900px; height: 500px"></div>
+<a id="chart_link-<%=chart_uuid%>" style="visibility: hidden;" href="">Download Chart</a>
+<% if !@export %>
 <table>
   <% max = @counts.values.max %>
   <% @ordered_months.each do |month| %>
@@ -52,5 +51,6 @@
     <td><span style="display: inline-block; background: red; position: relative; height:10px; width: <%=(count.to_f / max.to_f) * 600%>px"></span></td>
   <% end %>
 </table>
+<% end %>
 
 <% end # if ordered_months %>

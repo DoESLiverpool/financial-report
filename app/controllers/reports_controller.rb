@@ -2,6 +2,7 @@ class ReportsController < ApplicationController
   def categories
     @title = "Product Category Monthly Income"
     @product_category = ProductCategory.where(name: params[:product_category]).first
+    @export = params['export'] == 'on'
 
     @product_categories = ProductCategory.all
 
@@ -16,7 +17,6 @@ class ReportsController < ApplicationController
     # Hash of YYYYMM -> count of items for that month that have been paid for
     @paid_counts = {}
     min_date = nil
-    # Permanent Desk,Hot Desk,Monthly Hot Desk with storage,John McKerrell Hot desk with storage,Darryl Bayliss Hot Desk,Permanent Desk (For Student),Permanent Desk - August and September,Steven Hassall Hot Desk
     descriptions = @product_category.product_category_descriptions.map {|pcd| pcd.description}
     InvoiceItem.where(description: descriptions).each do |item|
       if item.invoice.status != "Sent"
@@ -46,7 +46,9 @@ class ReportsController < ApplicationController
     # Hash of YYYYMM -> YYYYMM (current month -> last month with same count)
     @month_lasts = {}
     @ordered_months = []
-    while true
+
+    # if min_date is nil then we have no data
+    while min_date
       yearmonth = min_date.strftime("%Y%m")
       @ordered_months << yearmonth
       if @counts[yearmonth].nil?
@@ -123,49 +125,82 @@ class ReportsController < ApplicationController
 
   def income_distribution
     @title = "Income Distribution"
+    @export = params['export'] == 'on'
 
-    categories_hash = {}
+    categories_calculator = CategoriesCalculator.new
     exclusions = params[:exclusions] || []
-    ProductCategoryDescription.all.each do |pcd|
-      category = pcd.product_category.name
-      categories_hash[pcd.description] = category
-    end
+
+    start_date = params[:all_time].nil? ? params[:start_date] : nil
+    end_date = params[:all_time].nil? ? params[:end_date] : nil
 
     begin
-      @start_date = Date.parse(params[:start_date])
+      @start_date = Date.parse(start_date)
     rescue Exception
       @start_date = Invoice.minimum(:date)
     end
     begin
-      @end_date = Date.parse(params[:end_date])
+      @end_date = Date.parse(end_date)
     rescue Exception
       @end_date = Date.today
     end
 
     @totals = {}
+    @bank_accounts = BankAccountEntry.distinct.pluck(:bank_account_name)
+    @bank_accounts.unshift("All")
+
+    if params[:bank_account].nil?
+      @categories = []
+      @periods = []
+      return
+    end
+
+    UnknownCategory.delete_all
     periods_hash = {}
-    InvoiceItem.joins(:invoice).where(["`date` >= ? AND `date` < ?", @start_date, @end_date]).each do |item|
-      category_name = categories_hash[item.description]
-      if exclusions.include?(category_name)
+    scope = BankAccountEntry.includes(invoice: :invoice_items).where(["description NOT LIKE 'Transfer from %' AND entry_type != 'Payment to Director Loan Account' AND bank_account_entries.`date` >= ? AND bank_account_entries.`date` < ?", @start_date, @end_date])
+    if params[:bank_account] != "All"
+      scope = scope.where(["bank_account_name = ?", params[:bank_account]])
+    end
+    scope.each do |entry|
+      if entry.gross_value < 0
         next
       end
-      if item.subtotal < 0
-        next
+      value_items = []
+      if entry.invoice && entry.invoice.invoice_items.length > 0
+        invoice_total = entry.invoice.invoice_items.reduce(0) do
+          |sum, item|
+          sum + item.subtotal
+        end
+        entry.invoice.invoice_items.each do |item|
+          # Assign a proportional amount of the bank entry to this
+          # item's category, should usually be the same as the item
+          # subtotal but covers where the currency differs or
+          # if this entry only covers part of the invoice
+          category_name = categories_calculator.find_category(item.description, entry.gross_value)
+          proportional_value = (item.subtotal / invoice_total) * entry.gross_value
+          value_items << { category: category_name, value: proportional_value, description: item.description }
+        end
+      else
+        category_name = categories_calculator.find_category(entry.description, entry.gross_value)
+        value_items << { category: category_name, value: entry.gross_value, description: entry.description }
       end
-      puts "Unknown category: #{item.description} #{item.subtotal}"
-      if category_name.nil?
-        category_name = "Other"
-      end
-      period = AccountingPeriod.which(item.invoice.date).description
+      period = AccountingPeriod.which(entry.date).description
       periods_hash[period] = 1
-      if @totals[category_name].nil?
-        @totals[category_name] = {"Total" => 0}
+      value_items.each do |item|
+        # category_name = categories_calculator.find_category(item[:category], item[:value])
+        category_name = item[:category]
+        value = item[:value]
+        if exclusions.include?(category_name)
+          next
+        end
+        if @totals[category_name].nil?
+          @totals[category_name] = {"Total" => 0}
+        end
+        if @totals[category_name][period].nil?
+          @totals[category_name][period] = 0
+        end
+        @totals[category_name][period] += value
+        @totals[category_name]["Total"] += value
       end
-      if @totals[category_name][period].nil?
-        @totals[category_name][period] = 0
-      end
-      @totals[category_name][period] += item.subtotal
-      @totals[category_name]["Total"] += item.subtotal
     end
     @categories = @totals.keys
     @periods = periods_hash.keys.sort

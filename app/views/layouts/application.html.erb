@@ -6,15 +6,26 @@
 
     <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
     <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(function() {
+    for (var i in chartLoaders) {
+      chartLoaders[i]();
+    }
+  });
+  var chartLoaders = [];
+</script>
   </head>
 
   <body>
+    <% if !@export %>
     <ul>
       <li><%= link_to "Categories", { controller: "reports", action: "categories" } %>
       <li><%= link_to "Income Distribution", { controller: "reports", action: "income_distribution" } %>
       <li><%= link_to "Service Users", { controller: "reports", action: "service_users" } %>
-      <li><%= link_to "Cost of Doing Epic", { controller: "reports", action: "cost_of_doing_epic" } %>
     </ul>
+    <% end %>
     <%= yield %>
   </body>
 </html>

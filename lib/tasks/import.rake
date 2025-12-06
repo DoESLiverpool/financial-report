@@ -145,8 +145,17 @@ namespace :import do
         if category.nil?
           category = ProductCategory.new
           category.name = row[0]
+          category.regex = row[2]
           category.save!
         end
+        regex = row[2]
+        if regex.present?
+          # Test the regex
+          stripped = regex.gsub(/\A\^?/, "").gsub(/\$?\z/, "")
+          Regexp.new("^#{stripped}$", Regexp::IGNORECASE)
+        end
+        category.regex = row[2]
+        category.save!
         last_category = category
       end
 
@@ -163,5 +172,6 @@ namespace :import do
         description.save!
       end
     end
+    puts
   end
 end
