@@ -20,7 +20,7 @@ namespace :convert do
     csv_filename = "#{filename}.csv"
     csv = CSV.open(csv_filename, "w")
     csv << ["Customer:", "DOES LIVERPOOL CIC(B11UQO)"]
-    transactions_sheet = book.sheet "CustomCurrentMiniStatementRepor"
+    transactions_sheet = book.sheet(0)
     puts "#{transactions_sheet.count} rows"
 
     account_number = transactions_sheet.cell('B', 4).gsub(/Account: /, '')
@@ -61,7 +61,6 @@ Transaction date			Bank reference					Customer reference	Type of payment			Credi
 EOF
 
     csv.close
-    puts File.read(csv_filename)
   end
 
 end
