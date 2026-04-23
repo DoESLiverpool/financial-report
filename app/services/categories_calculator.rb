@@ -39,7 +39,6 @@ class CategoriesCalculator
       @regex_map.each do |pattern, name|
         return name if input.match?(pattern)
       end
-      puts "Unknown category: ###{input}### #{gross_value}"
       UnknownCategory.create(description: input, price: gross_value)
       
       FALLBACK_CATEGORY

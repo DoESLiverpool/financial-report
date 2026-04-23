@@ -35,9 +35,6 @@ class ReportsController < ApplicationController
       @counts[yearmonth] += value
       if ! item.invoice.bank_account_entry_id.nil?
         @paid_counts[yearmonth] += value
-        puts "#{yearmonth}  PAID  #{item.invoice.contact} #{item.description}"
-      else
-        puts "#{yearmonth} UNPAID #{item.invoice.contact} #{item.description}"
       end
     end
 

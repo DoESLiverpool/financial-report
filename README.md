@@ -15,12 +15,12 @@ application up and running.
    1. Go to `DoES Liverpool CIC` and then `Settings`
    1. Choose `Export All Data`, which will then give you the `company-export-YYYY-MM-DD-HH-MM.xls` file to import
 1. `bundle install`
-1. `rake db:migrate`
-1. `bin/rails server`
-1. `rake import:freeagent ~/Downloads/company-export-2017-06-30-10-14.xls`
-1. `rake process:invoices`
-1. `rake generate:accounting_periods[start_date=2011-06-10]` (replace date with your incorporation date)
-1. `rake import:product_categories categories.csv`
+1. `bundle exec rake db:migrate`
+1. `bundle exec rails server`
+1. `bundle exec rake import:freeagent ~/Downloads/company-export-2017-06-30-10-14.xls`
+1. `bundle exec rake process:invoices`
+1. `bundle exec rake generate:accounting_periods[start_date=2011-06-10]` (This is DoES Liverpool's, replace date with your incorporation date)
+1. `bundle exec rake import:product_categories categories.csv`
 
 Then visit [http://localhost:3010/reports/categories](http://localhost:3010/reports/categories)
 
@@ -61,6 +61,16 @@ Some of the logging currently appears in the output, so if you redirect the outp
 
 Finally, update the narrative in the explanation to reflect where things are.
 
+
+### Graphs page for WordPress
+
+To generate a combined HTML snippet containing all the key graphs (income distribution charts and per-category monthly charts) ready to paste into a WordPress page:
+
+```
+bundle exec rake generate:graphs_page > graphs.html
+```
+
+This hits the reports controllers in-process (no server required) and outputs a single HTML fragment with the Google Charts library included once, text descriptions between the relevant charts, and all chart setup code combined.
 
 Things you may want to cover:
 
