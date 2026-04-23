@@ -1,0 +1,2 @@
+class UnknownCategory < ApplicationRecord
+end
