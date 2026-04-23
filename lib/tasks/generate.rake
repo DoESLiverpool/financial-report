@@ -103,11 +103,13 @@ EOF
     filename = File.expand_path(args[:filename])
     rows = CSV.parse(File.read(filename))
     year = rows[2][1]
-    categories_hash = {}
-    ProductCategoryDescription.all.each do |pcd|
-      category = pcd.product_category.name
-      categories_hash[pcd.description] = category
-    end
+    categories_calculator = CategoriesCalculator.new
+    excluded_categories = [
+      "Fiscal Host Funds",
+    ]
+    excluded_entry_types = [
+      "Circular Arts Network Holding",
+    ]
     begin
       @start_date = Date.parse(args[:start_date])
     rescue Exception
@@ -152,12 +154,12 @@ EOF
 
     @income_split = {}
     InvoiceItem.joins(:invoice).where(["`date` >= ? AND `date` < ?", @start_date, @end_date]).each do |item|
-      category_name = categories_hash[item.description]
       if item.subtotal < 0
         STDERR.puts "Skipping "+item.inspect
         next
       end
-      STDERR.puts "Unknown category: #{item.description} #{item.subtotal}"
+      category_name = categories_calculator.find_category(item.description, item.subtotal)
+      next if excluded_categories.include?(category_name)
       if category_name.nil?
         category_name = "Uncategorized"
       end
@@ -168,20 +170,16 @@ EOF
     end
 
     # Find totals for incomings and outgoings based on money in or out of the bank
-    # rather than invoices raised
+    # rather than invoices raised.
     @total_incoming = 0.0
     @total_outgoings = 0.0
-    BankAccountEntry.where(["`date` >= ? AND `date` < ?", @start_date, @end_date]).each do |item|
-      if item.entry_type.match?("Transfer.*Another Account")
-        next
-      end
-      if Float(item.gross_value) > 0
-        # Money in!
-        #STDERR.puts item.inspect
-        @total_incoming += Float(item.gross_value)
+    BankAccountEntry.where(["`date` >= ? AND `date` < ?", @start_date, @end_date]).each do |entry|
+      next if entry.entry_type.match?("Transfer.*Another Account")
+      next if excluded_entry_types.include?(entry.entry_type)
+      if Float(entry.gross_value) > 0
+        @total_incoming += Float(entry.gross_value)
       else
-        #STDERR.puts item.inspect
-        @total_outgoings += -1*Float(item.gross_value)
+        @total_outgoings += -1*Float(entry.gross_value)
       end
     end
 
@@ -261,6 +259,7 @@ EOF
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <style>
     body { font-family: "Transport New", sans-serif; background: #fff; font-size: 1.5vw }
     h1 { text-align: left; font-size: 14vw; margin: 2vw 0; }

@@ -52,14 +52,23 @@ Then get the profit and loss report:
 1. Enter the desired date range and choose "Apply"
 1. Export the report as CSV
 
-For example:
+For example we've been using 'previous 6 complete months' so on the 23rd April we would do 1st October -> 31st March:
 ```
-bundle exec rake generate:cost_of_doing_epic_poster[~/Downloads/DoES\ Liverpool\ CIC\ monthly\ profit\ and\ loss\ 2024-09-01\ to\ 2025-03-01.csv,2024-09-01,2025-03-01]
+bundle exec rake generate:cost_of_doing_epic_poster[~/Downloads/DoES\ Liverpool\ CIC\ monthly\ profit\ and\ loss\ 2025-10-01\ to\ 2026-03-31.csv,2025-10-01,2026-03-31]
 ```
 
 Some of the logging currently appears in the output, so if you redirect the output of that command to a file, open it and delete everything before the `&lt;!DOCTYPE html&gt;'
 
 Finally, update the narrative in the explanation to reflect where things are.
+
+#### Exclusions
+
+Some transactions should be excluded from the poster as they don't represent DoES Liverpool's own income or outgoings (e.g. money held and passed on as a fiscal host). These are excluded in two ways in `lib/tasks/generate.rake`:
+
+- `excluded_entry_types` — bank entries with these FreeAgent entry types are excluded from both the income and outgoings totals. Currently excludes `Circular Arts Network Holding`.
+- `excluded_categories` — invoice items resolved to these product categories are excluded from the income proportions. Currently excludes `Fiscal Host Funds`.
+
+If DoES Liverpool takes on further fiscal hosting arrangements, add the relevant entry type and/or category to these lists.
 
 
 ### Graphs page for WordPress
