@@ -341,6 +341,7 @@ EOF
     /* (relies on us pasting it into the <div class="entry-content"> element) */
     .entry-content { font-family: "Transport New", sans-serif; background: #fff; }
     .entry-content p { font-size: 1.2vw; }
+    h1.entry-title { display: none; } /* hide the default website header */
     .entry-content h1 { text-align: left; font-size: 5vw; margin: 1vw 0; }
 </style>
 </head>
