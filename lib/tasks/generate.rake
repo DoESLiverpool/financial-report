@@ -347,7 +347,7 @@ EOF
 </head>
 <body>
 <div id="poster">
-<h1>The Cost of Doing Epic</h1>
+<h1>DoES Liverpool is funded by the community, for the community.  Here's how.</h1>
 <div id="content">
     <div id="explanation">
         <p>DoES Liverpool is a Community Interest Company, <strong>funded by the members for the members</strong>.  It costs over £7000 each month to keep the space running.</p>
