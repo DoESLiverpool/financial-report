@@ -354,7 +354,7 @@ EOF
         <p>All the profits go back into expanding the space or getting new kit.</p>
         <h2>We Need More People Taking Desks or Workshop Membership</h2>
         <p>Last year we were running at a loss and used up almost all of our reserves.</p>
-        <p>The loss has reduced compared to the previous six months Cost of Doing Epic but we're still spending more than we earn!</p>
+        <p>Unfortunately our income has gone down and outgoings slightly up since last time, so we're still spending more than we earn! Outgoings will increase further as our rent went up in April 2026.</p>
         <p>We have plenty of spare desks and workshop capacity, so there's lots of scope for getting back to profit and building up our reserves.  Two people taking desks, for example, would get us to break-even.</p>
         <p>We also need to replace the HVAC units in the main space to give us heating (and cooling) again there.  From the quotes we've had for it, that will need us to raise around £6000.  That's why it's been a bit chilly in that room the past couple of winters, but even then our energy bills are quite high due to the alternate option of fan- and oil-heaters.</p>
         <p>Ideally we'd be steadily building up some reserves to cover the HVAC work <em>and</em> provide a buffer for unexpected expenses.</p>
