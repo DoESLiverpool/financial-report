@@ -1,11 +1,106 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+desk_months:
+  invoice: paid_desk
+  description: Permanent Desk
+  item_type: Months
+  quantity: 2
+  price: 215.00
+  subtotal: 430.00
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+# Negative subtotal is the reliable discount signal; item_type is not.
+desk_discount:
+  invoice: paid_desk
+  description: Member Permanent Desk Discount
+  item_type: Months
+  quantity: 1
+  price: -15.00
+  subtotal: -15.00
+
+# Non-duration item_type: folds into Monthly Desk's dominant unit (Months).
+desk_services:
+  invoice: paid_desk_services
+  description: Permanent Desk
+  item_type: Services
+  quantity: 1
+  price: 215.00
+  subtotal: 215.00
+
+mailbox_year:
+  invoice: paid_mailbox_year
+  description: Registered Business Address and Mailbox
+  item_type: Years
+  quantity: 1
+  price: 149.00
+  subtotal: 149.00
+
+mailbox_months:
+  invoice: paid_mailbox_month
+  description: Mailbox - Monthly Payment
+  item_type: Months
+  quantity: 3
+  price: 15.00
+  subtotal: 45.00
+
+friend_months:
+  invoice: paid_friend
+  description: Friends - DoES Membership
+  item_type: Months
+  quantity: 12
+  price: 10.00
+  subtotal: 120.00
+
+# Category with no duration item_type at all: unit is "each".
+deposit:
+  invoice: paid_deposit
+  description: Permanent Desk Key Deposit
+  item_type: Services
+  quantity: 1
+  price: 50.00
+  subtotal: 50.00
+
+event_days:
+  invoice: paid_event
+  description: Room hire and use of services
+  item_type: Days
+  quantity: 2
+  price: 120.00
+  subtotal: 240.00
+
+fiscal:
+  invoice: paid_fiscal
+  description: Circular Arts Network Holding
+  item_type: Services
+  quantity: 1
+  price: 1000.00
+  subtotal: 1000.00
+
+unpaid_desk_months:
+  invoice: unpaid_desk
+  description: Permanent Desk
+  item_type: Months
+  quantity: 1
+  price: 215.00
+  subtotal: 215.00
+
+cancelled_desk_months:
+  invoice: cancelled_desk
+  description: Permanent Desk
+  item_type: Months
+  quantity: 9
+  price: 215.00
+  subtotal: 1935.00
+
+draft_mailbox_months:
+  invoice: draft_mailbox
+  description: Mailbox - Monthly Payment
+  item_type: Months
+  quantity: 5
+  price: 15.00
+  subtotal: 75.00
+
+out_of_range_desk_months:
+  invoice: out_of_range_desk
+  description: Permanent Desk
+  item_type: Months
+  quantity: 99
+  price: 215.00
+  subtotal: 21285.00

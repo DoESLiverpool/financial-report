@@ -155,6 +155,7 @@ namespace :import do
           Regexp.new("^#{stripped}$", Regexp::IGNORECASE)
         end
         category.regex = row[2]
+        category.unit_price = row[3]
         category.save!
         last_category = category
       end
@@ -173,5 +174,15 @@ namespace :import do
       end
     end
     puts
+
+    # Every category in the CSV brings at least one description with it, so a
+    # category left with none is one the CSV no longer defines -- renamed, or
+    # split in two.  Its regex would otherwise stay in the database and carry
+    # on matching, ahead of the categories that replaced it.
+    orphaned = ProductCategory.where.missing(:product_category_descriptions)
+    if orphaned.any?
+      puts "Removing #{orphaned.count} category/ies no longer in the CSV: #{orphaned.pluck(:name).join(', ')}"
+      orphaned.destroy_all
+    end
   end
 end

@@ -8,7 +8,7 @@ class CategoriesCalculator
       @description_map = {}
       ProductCategory.includes(:product_category_descriptions).find_each do |category|
         category.product_category_descriptions.each do |desc|
-          @description_map[desc.description.downcase.strip] = category.name
+          @description_map[normalize(desc.description)] = category.name
         end
       end
   
@@ -24,7 +24,7 @@ class CategoriesCalculator
     end
   
     def find_category(input, gross_value)
-      input_down = input.downcase.strip
+      input_down = normalize(input)
 
       if input_down == FALLBACK_CATEGORY_DOWN
         return FALLBACK_CATEGORY
@@ -37,7 +37,7 @@ class CategoriesCalculator
   
       # Regex fallback
       @regex_map.each do |pattern, name|
-        return name if input.match?(pattern)
+        return name if input_down.match?(pattern)
       end
       UnknownCategory.create(description: input, price: gross_value)
       
@@ -45,7 +45,16 @@ class CategoriesCalculator
     end
   
     private
-  
+
+    # Bank descriptions arrive padded with runs of spaces, tabs and newlines,
+    # and the padding changes over time, so both the listed descriptions and
+    # the text being matched are squeezed down to single spaces first.  Note
+    # that UnknownCategory still records the original spelling, since that is
+    # what you need to see when adding to categories.csv.
+    def normalize(text)
+      text.to_s.downcase.gsub(/\s+/, " ").strip
+    end
+
     def sanitize_regex(regex)
         stripped = regex.gsub(/\A\^?/, "").gsub(/\$?\z/, "")
         Regexp.new("^#{stripped}$", Regexp::IGNORECASE)

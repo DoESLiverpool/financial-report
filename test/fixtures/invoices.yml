@@ -1,11 +1,77 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# Reporting period for ProductVolumesCalculatorTest is 2025-09-01 .. 2026-08-31.
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+# Paid: Sent and matched to a bank receipt.
+paid_desk:
+  contact: Desk Taker
+  date: 2026-01-15
+  status: Sent
+  total_value: 415.00
+
+paid_desk_services:
+  contact: Desk Taker
+  date: 2026-02-15
+  status: Sent
+  total_value: 215.00
+
+paid_mailbox_year:
+  contact: Mailbox User
+  date: 2025-11-01
+  status: Sent
+  total_value: 149.00
+
+paid_mailbox_month:
+  contact: Mailbox User
+  date: 2025-11-05
+  status: Sent
+  total_value: 45.00
+
+paid_friend:
+  contact: A Friend
+  date: 2025-10-01
+  status: Sent
+  total_value: 120.00
+
+paid_deposit:
+  contact: Desk Taker
+  date: 2025-09-10
+  status: Sent
+  total_value: 50.00
+
+paid_event:
+  contact: Event Organiser
+  date: 2026-04-01
+  status: Sent
+  total_value: 240.00
+
+paid_fiscal:
+  contact: Circular Arts Network
+  date: 2026-05-01
+  status: Sent
+  total_value: 1000.00
+
+# Sent but never paid: counted as invoiced, not as paid.
+unpaid_desk:
+  contact: Slow Payer
+  date: 2026-08-20
+  status: Sent
+  total_value: 215.00
+
+# Cancelled and draft invoices are not sales at all.
+cancelled_desk:
+  contact: Cancelled Member
+  date: 2026-02-01
+  status: Cancelled
+  total_value: 1935.00
+
+draft_mailbox:
+  contact: Prospective Member
+  date: 2026-03-01
+  status: Draft
+  total_value: 75.00
+
+# Before the reporting period.
+out_of_range_desk:
+  contact: Desk Taker
+  date: 2025-01-01
+  status: Sent
+  total_value: 21285.00

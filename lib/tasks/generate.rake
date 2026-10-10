@@ -393,4 +393,117 @@ EOF
 </html>
 EOF
   end
+
+  desc "Report how many of each product we sold over a period, to budget next year's prices"
+  task :product_volumes, [ :start_date, :end_date ] => :environment do |t, args|
+    begin
+      start_date = Date.parse(args[:start_date])
+    rescue Exception
+      start_date = ProductVolumesCalculator.default_start_date
+    end
+    begin
+      end_date = Date.parse(args[:end_date])
+    rescue Exception
+      end_date = ProductVolumesCalculator.default_end_date
+    end
+
+    result = ProductVolumesCalculator.new(start_date: start_date, end_date: end_date).call
+
+    # Both dates are inclusive, and we say so, because the poster task treats
+    # its end date as exclusive and it isn't obvious which you're getting.
+    STDERR.puts "Period: #{result.start_date} to #{result.end_date} (both inclusive)"
+    STDERR.puts "Units counted from invoices that were sent and paid; cancelled and draft invoices ignored."
+    STDERR.puts
+
+    # nil rather than "" so blank cells in the CSV are genuinely empty
+    money = ->(value) { format("%.2f", value) unless value.nil? }
+    units = ->(value) { format("%g", value.round(2)) unless value.nil? }
+
+    priced, unpriced = result.rows.partition(&:priced?)
+
+    unless priced.empty?
+      puts "PRODUCTS (unit price set in categories.csv)"
+      product_format = "%-24s %-7s %10s %10s %11s %10s %10s %8s %9s %9s"
+      puts format(product_format, "category", "unit", "inv.units", "paid.units", "received", "discounts", "uninvoiced", "price", "implied", "TOTAL")
+      priced.each do |row|
+        puts format(product_format,
+          row.category, row.unit || "?",
+          units.(row.units_invoiced), units.(row.units_paid),
+          money.(row.value_received), money.(row.discounts), money.(row.value_uninvoiced),
+          (money.(row.unit_price) if row.main_unit), units.(row.implied_units), units.(row.total_units))
+      end
+      puts
+    end
+
+    unless unpriced.empty?
+      puts "OTHER CATEGORIES (no unit price set, so no units implied from the money)"
+      other_format = "%-24s %-7s %10s %10s %11s %10s %10s %11s"
+      puts format(other_format, "category", "unit", "inv.units", "paid.units", "received", "discounts", "uninvoiced", "total")
+      unpriced.each do |row|
+        puts format(other_format,
+          row.category, row.unit,
+          units.(row.units_invoiced), units.(row.units_paid),
+          money.(row.value_received), money.(row.discounts), money.(row.value_uninvoiced), money.(row.value_total))
+      end
+      puts
+    end
+
+    puts format("TOTAL INCOME COUNTED   %s", money.(result.total_counted))
+    puts
+    puts "---"
+    puts
+    puts CSV.generate { |csv|
+      csv << %w[category unit units_invoiced units_paid value_received discounts value_uninvoiced unit_price implied_units total_units]
+      result.rows.each do |row|
+        csv << [ row.category, row.unit,
+                 units.(row.units_invoiced), units.(row.units_paid),
+                 money.(row.value_received), money.(row.discounts), money.(row.value_uninvoiced),
+                 money.(row.unit_price), units.(row.implied_units), units.(row.total_units) ]
+      end
+    }
+
+    STDERR.puts "Income the bank actually saw over the period: #{money.(result.total_bank_income)}"
+    STDERR.puts "(differs from the total counted: invoices are counted on their own date, receipts on the date the money landed, and discounts are reported separately rather than netted off)"
+    STDERR.puts
+
+    STDERR.puts "Invoiced but not counted as sold:"
+    STDERR.puts "  #{result.unpaid[:sent][:count]} sent but unpaid (#{money.(result.unpaid[:sent][:value])}) -- some of the most recent will just not have been paid yet"
+    STDERR.puts "  #{result.unpaid[:cancelled][:count]} cancelled (#{money.(result.unpaid[:cancelled][:value])})"
+    STDERR.puts "  #{result.unpaid[:draft][:count]} draft (#{money.(result.unpaid[:draft][:value])})"
+    STDERR.puts
+
+    unless result.unpriced_with_uninvoiced.empty?
+      STDERR.puts "Uninvoiced money with no unit price to divide it by, so it is in no unit count."
+      STDERR.puts "The unit counts for these categories cover invoiced items only:"
+      result.unpriced_with_uninvoiced.each do |category, value|
+        STDERR.puts format("  %-24s %10s", category, money.(value))
+      end
+      STDERR.puts "  Setting a UnitPrice in categories.csv would estimate units from this money."
+      STDERR.puts
+    end
+
+    unless result.price_mismatches.empty?
+      STDERR.puts "Unit counts that disagree with the money by more than 10%, so either the"
+      STDERR.puts "price is out of date or the quantities don't mean a unit each:"
+      result.price_mismatches.each do |category, counted, from_value|
+        STDERR.puts format("  %-24s %8s units counted, %8s implied by the money", category, units.(counted), units.(from_value))
+      end
+      STDERR.puts
+    end
+
+    unless result.multi_unit_priced.empty?
+      STDERR.puts "These categories sell in more than one unit, so their implied units are"
+      STDERR.puts "attributed to whichever unit earns the most, which is a guess:"
+      STDERR.puts "  #{result.multi_unit_priced.join(', ')}"
+      STDERR.puts
+    end
+
+    unless result.other_breakdown.empty?
+      STDERR.puts "Everything that fell into Other (worth mining for better categories.csv regexes):"
+      result.other_breakdown.each do |entry|
+        STDERR.puts format("  %-60s %3d %10s", entry.description.to_s.gsub(/\s+/, " ")[0, 60], entry.count, money.(entry.value))
+      end
+      STDERR.puts format("  %-60s %3d %10s", "TOTAL", result.other_breakdown.sum(&:count), money.(result.other_breakdown.sum(&:value)))
+    end
+  end
 end

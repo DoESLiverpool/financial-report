@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_22_105945) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_17_135701) do
   create_table "accounting_periods", force: :cascade do |t|
     t.date "start_date"
     t.date "end_date"
@@ -67,6 +67,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_22_105945) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "regex"
+    t.decimal "unit_price", precision: 10, scale: 2
   end
 
   create_table "product_category_descriptions", force: :cascade do |t|

@@ -1,11 +1,33 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# Categories used by ProductVolumesCalculatorTest.
+#
+# Regexes are kept mutually exclusive, or shadowed by an exact description
+# below, because CategoriesCalculator tries regexes in category id order and
+# fixture ids are not predictable.
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+monthly_desk:
+  name: Monthly Desk
+  regex: .*Permanent Desk.*
+  unit_price: 215.00
+
+mailbox:
+  name: Mailbox
+  regex: .*Mailbox.*
+  unit_price: 15.00
+
+friend:
+  name: Friend
+  regex: .*(membership|friend).*
+  unit_price: 10.00
+
+key_deposit:
+  name: Key Deposit
+  regex: .*Key Deposit.*
+  unit_price: 50.00
+
+# No unit price: reported as money only, never itemised into units.
+event_hire:
+  name: Event Hire
+  regex: .*(Room|venue) (hire|rental).*
+
+fiscal_host:
+  name: Fiscal Host Funds

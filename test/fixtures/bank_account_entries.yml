@@ -1,11 +1,132 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# Receipts that mark their invoice as actually paid.
+receipt_desk:
+  bank_account_name: Current
+  description: Invoice receipt against 001
+  date: 2026-01-20
+  entry_type: Invoice Receipt
+  gross_value: 415.00
+  invoice: paid_desk
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+receipt_desk_services:
+  bank_account_name: Current
+  description: Invoice receipt against 002
+  date: 2026-02-20
+  entry_type: Invoice Receipt
+  gross_value: 215.00
+  invoice: paid_desk_services
+
+receipt_mailbox_year:
+  bank_account_name: Current
+  description: Invoice receipt against 003
+  date: 2025-11-10
+  entry_type: Invoice Receipt
+  gross_value: 149.00
+  invoice: paid_mailbox_year
+
+receipt_mailbox_month:
+  bank_account_name: Current
+  description: Invoice receipt against 004
+  date: 2025-11-12
+  entry_type: Invoice Receipt
+  gross_value: 45.00
+  invoice: paid_mailbox_month
+
+receipt_friend:
+  bank_account_name: Current
+  description: Invoice receipt against 005
+  date: 2025-10-05
+  entry_type: Invoice Receipt
+  gross_value: 120.00
+  invoice: paid_friend
+
+receipt_deposit:
+  bank_account_name: Current
+  description: Invoice receipt against 006
+  date: 2025-09-15
+  entry_type: Invoice Receipt
+  gross_value: 50.00
+  invoice: paid_deposit
+
+receipt_event:
+  bank_account_name: Current
+  description: Invoice receipt against 007
+  date: 2026-04-10
+  entry_type: Invoice Receipt
+  gross_value: 240.00
+  invoice: paid_event
+
+# Fiscal hosting money passing through: excluded by entry_type.
+receipt_fiscal:
+  bank_account_name: Current
+  description: Invoice receipt against 008
+  date: 2026-05-10
+  entry_type: Circular Arts Network Holding
+  gross_value: 1000.00
+  invoice: paid_fiscal
+
+# Uninvoiced income: standing orders with no invoice behind them.
+standing_order_friend_a:
+  bank_account_name: Current
+  description: Jane Doe Membership
+  date: 2025-12-01
+  entry_type: Sales
+  gross_value: 10.00
+
+standing_order_friend_b:
+  bank_account_name: Current
+  description: Jane Doe Membership
+  date: 2026-01-01
+  entry_type: Sales
+  gross_value: 10.00
+
+uninvoiced_mailbox:
+  bank_account_name: Current
+  description: Mailbox - Monthly Payment
+  date: 2026-01-08
+  entry_type: Sales
+  gross_value: 30.00
+
+# Uninvoiced money for a category with no unit price: money only, no units.
+uninvoiced_event:
+  bank_account_name: Current
+  description: Room hire and use of services
+  date: 2026-06-01
+  entry_type: Sales
+  gross_value: 60.00
+
+# Matches nothing, so falls into Other and is never converted to units.
+uninvoiced_unknown:
+  bank_account_name: Current
+  description: Some Random Transfer
+  date: 2026-07-01
+  entry_type: Sales
+  gross_value: 77.00
+
+# Excluded: internal transfer, fiscal hosting, outgoing, out of period.
+internal_transfer:
+  bank_account_name: Current
+  description: Transfer from Business Deposit Account
+  date: 2026-03-01
+  entry_type: Transfer from Another Account
+  gross_value: 5000.00
+
+fiscal_holding:
+  bank_account_name: Current
+  description: Circular Arts Network money in
+  date: 2026-03-02
+  entry_type: Circular Arts Network Holding
+  gross_value: 500.00
+
+outgoing:
+  bank_account_name: Current
+  description: Rent
+  date: 2026-03-03
+  entry_type: Bill Payment
+  gross_value: -50.00
+
+out_of_range_sale:
+  bank_account_name: Current
+  description: Jane Doe Membership
+  date: 2025-01-05
+  entry_type: Sales
+  gross_value: 999.00

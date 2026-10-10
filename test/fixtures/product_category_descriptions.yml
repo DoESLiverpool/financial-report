@@ -1,11 +1,32 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+permanent_desk:
+  product_category: monthly_desk
+  description: Permanent Desk
 
-# This model initially had no columns defined. If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-# column: value
+desk_discount:
+  product_category: monthly_desk
+  description: Member Permanent Desk Discount
+
+business_address:
+  product_category: mailbox
+  description: Registered Business Address and Mailbox
+
+monthly_mailbox:
+  product_category: mailbox
+  description: Mailbox - Monthly Payment
+
+friends_membership:
+  product_category: friend
+  description: Friends - DoES Membership
+
+# Shadows the Monthly Desk regex, which would otherwise also match this.
+desk_key_deposit:
+  product_category: key_deposit
+  description: Permanent Desk Key Deposit
+
+room_hire:
+  product_category: event_hire
+  description: Room hire and use of services
+
+fiscal_holding:
+  product_category: fiscal_host
+  description: Circular Arts Network Holding
