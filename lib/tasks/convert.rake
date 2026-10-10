@@ -26,30 +26,42 @@ namespace :convert do
     account_number = transactions_sheet.cell('B', 4).gsub(/Account: /, '')
     csv << ["Account:", "#{account_number}-DOES LIVERPOOL"]
 
-    date_to = transactions_sheet.cell('B', 13)
-    date_from = transactions_sheet.cell('B', transactions_sheet.count)
+    # The current account and deposit account exports have different layouts,
+    # so find the header row and look up the columns by their headings
+    header_row = (1..transactions_sheet.last_row).find { |row| transactions_sheet.cell('B', row) == 'Transaction date' }
+    columns = (transactions_sheet.first_column..transactions_sheet.last_column).each_with_object({}) do |col, hash|
+      heading = transactions_sheet.cell(header_row, col)
+      hash[heading] = col unless heading.nil?
+    end
+    col = ->(heading) { columns.fetch(heading) }
+    balance_as_of_row = (1..header_row).find { |row| transactions_sheet.cell('D', row).to_s =~ /balance as of/i }
+    transaction_rows = ((header_row + 1)..transactions_sheet.last_row).reject { |row| transactions_sheet.cell('B', row).nil? }
+
+    date_to = transactions_sheet.cell('B', transaction_rows.first)
+    date_from = transactions_sheet.cell('B', transaction_rows.last)
     csv << ["Date Range:", "From : #{date_from}", "To : #{date_to}"]
     csv << ["Today's Cleared Balance:", transactions_sheet.cell('I', 6).strip_money]
     csv << ["Today's Uncleared Balance:", transactions_sheet.cell('P', 6).strip_money]
-    csv << ["Transactions", '', '', '', '', '', transactions_sheet.cell('I', 8)]
+    csv << ["Transactions", '', '', '', '', '', transactions_sheet.cell('I', balance_as_of_row)]
     csv << ["Date","Description","Bank     Reference","Customer  Reference","Credit","Debit","Additional Information","Running  Balance"]
-    # Starts from B13
-    (13..transactions_sheet.count).each do |row|
-      debit = transactions_sheet.cell('Q', row)
+    transaction_rows.each do |row|
+      bank_reference = transactions_sheet.cell(row, col['Bank reference'])
+      customer_reference = transactions_sheet.cell(row, col['Customer reference'])
+      debit = transactions_sheet.cell(row, col['Debit amount (GBP)'])
       debit = debit.strip_money.to_f * -1 unless debit.nil?
       references = [
-        transactions_sheet.cell('E', row),
-        transactions_sheet.cell('J', row),
+        bank_reference,
+        customer_reference,
       ].compact.sort.join(' - ')
       csv << [
         transactions_sheet.cell('B', row),
-        transactions_sheet.cell('K', row),
+        transactions_sheet.cell(row, col['Type of payment']),
         references,
         references,
-        (transactions_sheet.cell('N', row)||'').strip_money,
+        (transactions_sheet.cell(row, col['Credit amount (GBP)'])||'').strip_money,
         debit,
-        "#{transactions_sheet.cell('E', row)}#{transactions_sheet.cell('J', row)}",
-        transactions_sheet.cell('R', row).gsub(/£ ?/, ''),
+        "#{bank_reference}#{customer_reference}",
+        transactions_sheet.cell(row, col['Balance (GBP)']).gsub(/£ ?/, ''),
       ]
     end
 
